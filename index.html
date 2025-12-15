@@ -1750,12 +1750,49 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
                 });
             };
             
+            // UNIFIED event handler usando SOLO 'click' per tutti gli elementi
             mezziList.addEventListener('click', (e) => {
+                console.log('🎯 CLICK event on mezziList:', e.target);
+                
+                // Gestione checkbox di attivazione
+                if (e.target.type === 'checkbox' && e.target.dataset.action === 'toggle-availability') {
+                    console.log('✅ Checkbox toggle detected!');
+                    const vehicleId = e.target.dataset.id;
+                    const newState = e.target.checked;
+                    
+                    console.log('Vehicle ID:', vehicleId);
+                    console.log('New state:', newState);
+                    console.log('All vehicles:', vehicles);
+                    
+                    const vehicle = vehicles.find(v => String(v.id) === String(vehicleId));
+                    console.log('Found vehicle:', vehicle);
+                    
+                    if (vehicle) {
+                        vehicle.isAvailable = newState;
+                        console.log(`Setting isAvailable to ${newState} for ${vehicle.targa}`);
+                        saveVehicles();
+                        
+                        // Forza re-render immediato
+                        setTimeout(() => {
+                            renderVehiclesList();
+                            renderAvailableVehiclesList();
+                            console.log(`✅ Mezzo ${vehicle.targa} ${vehicle.isAvailable ? 'ATTIVATO' : 'DISATTIVATO'}`);
+                        }, 10);
+                    } else {
+                        console.error('❌ Vehicle not found! ID:', vehicleId);
+                        console.error('Available IDs:', vehicles.map(v => ({id: v.id, type: typeof v.id})));
+                    }
+                    return; // Stop propagation
+                }
+                
+                // Gestione altri pulsanti
                 const target = e.target.closest('[data-action]');
                 if (!target) return;
 
                 const action = target.dataset.action;
                 const id = target.dataset.id;
+                
+                console.log('Button action:', action, 'ID:', id);
                 
                 if (action === 'delete') {
                     const vehicle = vehicles.find(v => v.id === id);
@@ -1767,35 +1804,6 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
                     }
                 } else if (action === 'rules') {
                     openVehicleRulesModal(id);
-                }
-            });
-            
-            // Event listener separato per i checkbox di attivazione mezzi
-            mezziList.addEventListener('change', (e) => {
-                console.log('Change event triggered on:', e.target);
-                console.log('Target type:', e.target.type);
-                console.log('Target action:', e.target.dataset.action);
-                
-                if (e.target.type === 'checkbox' && e.target.dataset.action === 'toggle-availability') {
-                    const vehicleId = e.target.dataset.id;
-                    console.log('Vehicle ID:', vehicleId);
-                    console.log('All vehicles:', vehicles);
-                    
-                    const vehicle = vehicles.find(v => v.id === vehicleId);
-                    console.log('Found vehicle:', vehicle);
-                    
-                    if (vehicle) {
-                        vehicle.isAvailable = e.target.checked;
-                        console.log(`Setting isAvailable to ${e.target.checked} for ${vehicle.targa}`);
-                        saveVehicles();
-                        renderVehiclesList(); // Aggiorna per cambiare il colore dello sfondo
-                        renderAvailableVehiclesList();
-                        console.log(`✅ Mezzo ${vehicle.targa} ${vehicle.isAvailable ? 'attivato' : 'disattivato'}`);
-                    } else {
-                        console.error('❌ Vehicle not found! ID:', vehicleId);
-                    }
-                } else {
-                    console.log('Not a toggle-availability checkbox');
                 }
             });
             
