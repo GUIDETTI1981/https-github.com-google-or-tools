@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Checkbox - Test Isolato</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800">🔍 Debug Checkbox Attivo - Test Isolato</h1>
+        
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+            <p class="text-sm text-blue-800">
+                <strong>Questo test replica ESATTAMENTE la struttura dell'app principale.</strong><br>
+                Apri la Console (F12) e clicca sui checkbox per vedere i log dettagliati.
+            </p>
+        </div>
+
+        <!-- Alert API Error -->
+        <div id="apiErrorAlert" class="hidden mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+            <div class="flex items-start">
+                <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+                <div>
+                    <h3 class="font-bold text-yellow-800">Test Mode</h3>
+                    <p class="text-sm text-yellow-700 mt-1">Usando dati di test.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabella Mezzi -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full leading-normal">
+                <thead>
+                    <tr>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <i class="fas fa-check-circle mr-1"></i>Attivo
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Targa
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Autista
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Portata (kg)
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="mezziList">
+                    <!-- Veicoli verranno inseriti qui -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h3 class="font-bold mb-2">📊 Debug Info</h3>
+            <pre id="debugInfo" class="text-xs bg-white p-3 rounded border overflow-auto max-h-96"></pre>
+        </div>
+
+        <div class="mt-6 p-4 bg-green-50 rounded-lg">
+            <h3 class="font-bold mb-2 text-green-800">✅ Test Manuale</h3>
+            <button id="testBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Attiva Manualmente Primo Mezzo
+            </button>
+            <button id="clearBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 ml-2">
+                Cancella localStorage
+            </button>
+        </div>
+    </div>
+
+    <script>
+        console.clear();
+        console.log('=== DEBUG CHECKBOX TEST STARTED ===');
+        
+        // Dati veicoli (identici alla struttura app principale)
+        let vehicles = JSON.parse(localStorage.getItem('vehiclesData')) || [];
+        
+        const mezziList = document.getElementById('mezziList');
+        const debugInfo = document.getElementById('debugInfo');
+        const apiErrorAlert = document.getElementById('apiErrorAlert');
+
+        // Funzioni utility
+        const saveVehicles = () => {
+            localStorage.setItem('vehiclesData', JSON.stringify(vehicles));
+            console.log('💾 Vehicles saved to localStorage');
+            updateDebugInfo();
+        };
+
+        const updateDebugInfo = () => {
+            debugInfo.textContent = JSON.stringify({
+                vehiclesCount: vehicles.length,
+                vehicles: vehicles,
+                localStorageRaw: localStorage.getItem('vehiclesData')
+            }, null, 2);
+        };
+
+        // Funzione render (IDENTICA all'app principale)
+        const renderVehiclesList = () => {
+            console.log('🔄 renderVehiclesList called, vehicles count:', vehicles.length);
+            mezziList.innerHTML = '';
+            
+            if (vehicles.length === 0) {
+                mezziList.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-gray-500">Nessun mezzo inserito.</td></tr>';
+                return;
+            }
+            
+            vehicles.forEach(v => {
+                console.log(`  - Rendering vehicle: ${v.targa}, isAvailable: ${v.isAvailable}, id: ${v.id}`);
+                
+                const tr = document.createElement('tr');
+                const isChecked = v.isAvailable ?? false;
+                const statusClass = isChecked ? 'bg-green-50' : 'bg-gray-50';
+                tr.className = statusClass;
+                
+                tr.innerHTML = `
+                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-center">
+                        <label class="flex items-center justify-center cursor-pointer">
+                            <input type="checkbox" 
+                                   data-id="${v.id}" 
+                                   data-action="toggle-availability" 
+                                   class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500" 
+                                   ${isChecked ? 'checked' : ''}>
+                            <span class="ml-2 text-xs font-medium ${isChecked ? 'text-green-600' : 'text-gray-400'}">
+                                ${isChecked ? 'Sì' : 'No'}
+                            </span>
+                        </label>
+                    </td>
+                    <td class="px-5 py-4 border-b border-gray-200 text-sm">
+                        <span class="font-semibold text-gray-800">${v.targa}</span>
+                    </td>
+                    <td class="px-5 py-4 border-b border-gray-200 text-sm">${v.autista || 'N/D'}</td>
+                    <td class="px-5 py-4 border-b border-gray-200 text-sm">${v.payload.toLocaleString()} kg</td>
+                `;
+                
+                mezziList.appendChild(tr);
+            });
+            
+            updateDebugInfo();
+        };
+
+        // Event listener per checkbox (IDENTICO all'app principale)
+        mezziList.addEventListener('change', (e) => {
+            console.log('🎯 Change event triggered!');
+            console.log('  Target:', e.target);
+            console.log('  Target type:', e.target.type);
+            console.log('  Target action:', e.target.dataset.action);
+            console.log('  Target id:', e.target.dataset.id);
+            
+            if (e.target.type === 'checkbox' && e.target.dataset.action === 'toggle-availability') {
+                const vehicleId = e.target.dataset.id;
+                console.log('📍 Looking for vehicle ID:', vehicleId);
+                console.log('📍 All vehicles:', vehicles);
+                
+                const vehicle = vehicles.find(v => v.id === vehicleId);
+                console.log('🔍 Found vehicle:', vehicle);
+                
+                if (vehicle) {
+                    vehicle.isAvailable = e.target.checked;
+                    console.log(`✅ Setting isAvailable to ${e.target.checked} for ${vehicle.targa}`);
+                    saveVehicles();
+                    renderVehiclesList();
+                    console.log(`✅ Mezzo ${vehicle.targa} ${vehicle.isAvailable ? 'attivato' : 'disattivato'}`);
+                } else {
+                    console.error('❌ Vehicle not found! ID:', vehicleId);
+                    console.error('Available IDs:', vehicles.map(v => v.id));
+                }
+            } else {
+                console.log('⚠️ Not a toggle-availability checkbox');
+            }
+        });
+
+        // Test manuale
+        document.getElementById('testBtn').addEventListener('click', () => {
+            if (vehicles.length > 0) {
+                vehicles[0].isAvailable = !vehicles[0].isAvailable;
+                saveVehicles();
+                renderVehiclesList();
+                console.log('🧪 Manual test: toggled first vehicle');
+            } else {
+                alert('Nessun veicolo disponibile per il test!');
+            }
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            localStorage.clear();
+            vehicles = [];
+            renderVehiclesList();
+            console.log('🗑️ localStorage cleared');
+        });
+
+        // Inizializzazione
+        const initialize = () => {
+            console.log('🚀 Initializing...');
+            
+            // Se non ci sono veicoli, crea dati di test
+            if (vehicles.length === 0) {
+                console.log('📝 Creating test vehicles...');
+                vehicles = [
+                    {
+                        id: 'test-vehicle-1',
+                        targa: 'AA123BB',
+                        payload: 3500,
+                        autista: 'Mario Rossi',
+                        isAvailable: false
+                    },
+                    {
+                        id: 'test-vehicle-2',
+                        targa: 'CC456DD',
+                        payload: 5000,
+                        autista: 'Luigi Verdi',
+                        isAvailable: false
+                    },
+                    {
+                        id: 'test-vehicle-3',
+                        targa: 'EE789FF',
+                        payload: 7000,
+                        autista: 'Giuseppe Bianchi',
+                        isAvailable: true
+                    }
+                ];
+                saveVehicles();
+                apiErrorAlert.classList.remove('hidden');
+            }
+            
+            renderVehiclesList();
+            console.log('✅ Initialization complete');
+            console.log('📋 Click on checkboxes to test');
+        };
+
+        // Avvia
+        initialize();
+        
+        console.log('=== READY FOR TESTING ===');
+        console.log('1. Click any checkbox');
+        console.log('2. Watch console logs');
+        console.log('3. Check if background turns green');
+    </script>
+</body>
+</html>
