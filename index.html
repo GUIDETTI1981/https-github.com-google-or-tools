@@ -1747,6 +1747,33 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
                             this.blur();
                         }
                     });
+                    
+                    // ✅ FIX: Aggiungi listener DIRETTO per checkbox toggle
+                    const checkbox = tr.querySelector('input[type="checkbox"][data-action="toggle-availability"]');
+                    if (checkbox) {
+                        checkbox.addEventListener('change', function(e) {
+                            console.log('🎯 DIRECT checkbox change event!');
+                            const vehicleId = this.dataset.id;
+                            const newState = this.checked;
+                            
+                            console.log('Vehicle ID:', vehicleId, 'New state:', newState);
+                            
+                            const vehicle = vehicles.find(v => String(v.id) === String(vehicleId));
+                            if (vehicle) {
+                                vehicle.isAvailable = newState;
+                                console.log(`✅ Updated ${vehicle.targa} to isAvailable=${newState}`);
+                                saveVehicles();
+                                
+                                setTimeout(() => {
+                                    renderVehiclesList();
+                                    renderAvailableVehiclesList();
+                                    console.log(`✅ Mezzo ${vehicle.targa} ${vehicle.isAvailable ? 'ATTIVATO' : 'DISATTIVATO'}`);
+                                }, 10);
+                            } else {
+                                console.error('❌ Vehicle not found:', vehicleId);
+                            }
+                        });
+                    }
                 });
             };
             
