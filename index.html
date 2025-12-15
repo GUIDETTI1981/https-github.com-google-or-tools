@@ -979,13 +979,18 @@
 
             const DEPOT_COORDS = [44.5225, 10.7480]; // Via Raffaello 3, 42014 Castellarano RE
             const DEPOT_NAME = "Magazzino Centrale";
-            const API_CERAMICHE_URL = 'https://mqivq9o400.execute-api.eu-west-1.amazonaws.com/Produzione/anagrafiche-ceramiche';
-            const API_CLIENTI_URL = 'https://mqivq9o400.execute-api.eu-west-1.amazonaws.com/Produzione/anagrafiche-clienti';
-            const API_DEPOSITI_URL = 'https://mqivq9o400.execute-api.eu-west-1.amazonaws.com/Produzione/anagrafiche-depositi';
-            const API_MEZZI_URL = 'https://mqivq9o400.execute-api.eu-west-1.amazonaws.com/Produzione/anagrafiche-mezzi';
-            const API_AUTISTI_URL = 'https://mqivq9o400.execute-api.eu-west-1.amazonaws.com/Produzione/anagrafiche-autisti';
-            const API_PRONTI_URL = 'https://mqivq9o400.execute-api.eu-west-1.amazonaws.com/Produzione/lista-pronti';
-            const API_UPDATE_OPTIONAL = 'https://mqivq9o400.execute-api.eu-west-1.amazonaws.com/Produzione/update-datiopzionali';
+            // === API Configuration ===
+            const API_KEY = 'qtT4YJyQOg1O65ncb7jy91YxuRDuLD2U8vHXlmpw';
+            const API_BASE_URL = 'https://mqivq9o400.execute-api.eu-west-1.amazonaws.com/Produzione';
+            
+            const API_CERAMICHE_URL = `${API_BASE_URL}/anagrafiche-ceramiche`;
+            const API_CLIENTI_URL = `${API_BASE_URL}/anagrafiche-clienti`;
+            const API_DEPOSITI_URL = `${API_BASE_URL}/anagrafiche-depositi`;
+            const API_MEZZI_URL = `${API_BASE_URL}/anagrafiche-mezzi`;
+            const API_AUTISTI_URL = `${API_BASE_URL}/anagrafiche-autisti`;
+            const API_PRONTI_URL = `${API_BASE_URL}/lista-pronti`;
+            const API_RITIRI_ATTIVI_URL = `${API_BASE_URL}/ritiri-attivi`;
+            const API_UPDATE_OPTIONAL = `${API_BASE_URL}/update-datiopzionali`;
             
             // === PROMPT E REGOLE DI ZONA ===
             const DEFAULT_OPTIMIZATION_PROMPT = `Sei un pianificatore logistico. 
@@ -1928,28 +1933,62 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
                 submitBtn.disabled = true;
 
                 try {
-                    const response = await fetch(API_PRONTI_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ date: selectedDate })
+                    console.log('📥 Importing orders for date:', selectedDate);
+                    console.log('🔗 Using API:', API_RITIRI_ATTIVI_URL);
+                    
+                    // Usa ritiri-attivi con GET e API key
+                    const response = await fetch(API_RITIRI_ATTIVI_URL, {
+                        method: 'GET',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'x-api-key': API_KEY
+                        }
                     });
 
-                    if (!response.ok) throw new Error(`Errore API: ${response.status}`);
-                    const ordersJson = await response.json();
+                    if (!response.ok) {
+                        throw new Error(`Errore API: ${response.status} ${response.statusText}`);
+                    }
                     
-                    const rows = JSON.parse(ordersJson);
-                    if (!Array.isArray(rows)) throw new Error("Formato risposta non valido");
+                    const responseData = await response.json();
+                    console.log('📦 Raw API response:', responseData);
                     
-                    const newOrders = rows.map(row => ({
-                        id: sanitizeString(row['Id']),
-                        ceramica: sanitizeString(row['NomeCeramica']),
-                        cliente: sanitizeString(row['NomeCliente']),
-                        peso: parseInt(row['Peso'] || '0', 10),
-                        priorita: sanitizeString(row['Priorita']),
-                        prenotazione: row['Datadiprenotazione'],
-                        timeprenotazione :row['Tempodiprenotazione'],
-                        mercePronta: sanitizeString(row['TempodiPronto']).toLowerCase(),
-                        deposito: sanitizeString(row['Deposito']),
+                    // Parse response (potrebbe essere string o già parsed)
+                    let rows;
+                    if (typeof responseData === 'string') {
+                        rows = JSON.parse(responseData);
+                    } else if (responseData.data) {
+                        rows = typeof responseData.data === 'string' ? JSON.parse(responseData.data) : responseData.data;
+                    } else if (Array.isArray(responseData)) {
+                        rows = responseData;
+                    } else {
+                        throw new Error("Formato risposta API non riconosciuto");
+                    }
+                    
+                    if (!Array.isArray(rows)) {
+                        throw new Error("La risposta API non contiene un array di ordini");
+                    }
+                    
+                    console.log(`✅ Found ${rows.length} active orders`);
+                    
+                    // Filtra per data selezionata (se il campo data è presente)
+                    const filteredRows = selectedDate ? 
+                        rows.filter(row => {
+                            const orderDate = row['Datadiprenotazione'] || row['data'] || '';
+                            return orderDate.includes(selectedDate);
+                        }) : rows;
+                    
+                    console.log(`📅 Filtered to ${filteredRows.length} orders for date ${selectedDate}`);
+                    
+                    const newOrders = filteredRows.map(row => ({
+                        id: sanitizeString(row['Id'] || row['id']),
+                        ceramica: sanitizeString(row['NomeCeramica'] || row['ceramica']),
+                        cliente: sanitizeString(row['NomeCliente'] || row['cliente']),
+                        peso: parseInt(row['Peso'] || row['peso'] || '0', 10),
+                        priorita: sanitizeString(row['Priorita'] || row['priorita']),
+                        prenotazione: row['Datadiprenotazione'] || row['data'],
+                        timeprenotazione: row['Tempodiprenotazione'] || row['tempo'],
+                        mercePronta: sanitizeString(row['TempodiPronto'] || row['pronto'] || '').toLowerCase(),
+                        deposito: sanitizeString(row['Deposito'] || row['deposito']),
                         status: 'Da Assegnare'
                     })).filter(o => o.ceramica);
 
@@ -1959,9 +1998,12 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
                     checkOptimizationReady();
                     importOrdersModal.classList.add('hidden');
                     importOrdersForm.reset();
+                    
+                    console.log(`✅ Successfully imported ${orders.length} orders`);
+                    alert(`✅ Importati ${orders.length} ordini attivi`);
                 } catch (error) {
-                    console.error("Errore durante l'importazione ordini:", error);
-                    alert("Impossibile importare gli ordini. Riprova più tardi.");
+                    console.error("❌ Errore durante l'importazione ordini:", error);
+                    alert(`Impossibile importare gli ordini: ${error.message}`);
                 } finally {
                     submitBtn.textContent = "Importa";
                     submitBtn.disabled = false;
@@ -2592,8 +2634,16 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
 
             const fetchAndParseApiData = async (url) => {
                 try {
-                    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
-                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const response = await fetch(url, { 
+                        headers: { 
+                            'Accept': 'application/json',
+                            'x-api-key': API_KEY
+                        } 
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                    }
                     
                     const body = await response.json();
                     let dataArray;
@@ -2614,9 +2664,11 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
                     if (!Array.isArray(dataArray)) {
                         throw new Error("Final parsed data is not an array.");
                     }
+                    
+                    console.log(`✅ API Success: ${url} - ${dataArray.length} items loaded`);
                     return { data: dataArray };
                 } catch (error) {
-                    console.error(`Failed to fetch and parse from ${url}:`, error);
+                    console.error(`❌ Failed to fetch and parse from ${url}:`, error);
                     return { data: [] };
                 }
             };
