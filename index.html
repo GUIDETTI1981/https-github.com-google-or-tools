@@ -343,6 +343,21 @@
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Elenco Mezzi e Autisti</h2>
                 </div>
+                
+                <!-- Alert API Error (nascosto di default) -->
+                <div id="apiErrorAlert" class="hidden mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+                        <div>
+                            <h3 class="font-bold text-yellow-800">Attenzione: API non disponibile</h3>
+                            <p class="text-sm text-yellow-700 mt-1">
+                                Non è possibile caricare i dati dall'API (errore 403). Vengono utilizzati veicoli di esempio.
+                                <strong>Puoi comunque testare l'attivazione dei mezzi.</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Tabella Mezzi -->
                 
                 <div class="bg-white shadow-md rounded-lg overflow-y-auto" style="max-height: calc(100vh - 150px);">
@@ -2739,7 +2754,54 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
                     saveVehicles();
                     renderVehiclesList();
                 } catch (error) {
-                    console.error('Errore durante il caricamento dei mezzi da API:', error);
+                    console.error('❌ Errore durante il caricamento dei mezzi da API (403 Forbidden):', error);
+                    console.warn('⚠️ Usando dati mezzi da localStorage o dati mock di esempio');
+                    
+                    // Mostra alert API error
+                    const apiErrorAlert = document.getElementById('apiErrorAlert');
+                    if (apiErrorAlert) {
+                        apiErrorAlert.classList.remove('hidden');
+                    }
+                    
+                    // Se non ci sono dati in localStorage, crea veicoli di esempio
+                    if (vehicles.length === 0) {
+                        console.log('📝 Creazione veicoli di esempio per test...');
+                        vehicles = [
+                            {
+                                id: 'veicolo-demo-1',
+                                targa: 'AA123BB',
+                                payload: 3500,
+                                autista: 'Mario Rossi',
+                                trasportatore: 'Trasporti SpA',
+                                telefono: '0536-123456',
+                                isAvailable: false,
+                                rules: { maxStops: null, mandatoryCeramics: [] }
+                            },
+                            {
+                                id: 'veicolo-demo-2',
+                                targa: 'CC456DD',
+                                payload: 5000,
+                                autista: 'Luigi Verdi',
+                                trasportatore: 'Logistica Srl',
+                                telefono: '0536-789012',
+                                isAvailable: false,
+                                rules: { maxStops: null, mandatoryCeramics: [] }
+                            },
+                            {
+                                id: 'veicolo-demo-3',
+                                targa: 'EE789FF',
+                                payload: 7000,
+                                autista: 'Giuseppe Bianchi',
+                                trasportatore: 'Express Srl',
+                                telefono: '0536-345678',
+                                isAvailable: false,
+                                rules: { maxStops: null, mandatoryCeramics: [] }
+                            }
+                        ];
+                        saveVehicles();
+                        console.log('✅ Creati 3 veicoli di esempio. Puoi attivarli cliccando la checkbox "Attivo"');
+                    }
+                    
                     renderVehiclesList();
                 }
             };
