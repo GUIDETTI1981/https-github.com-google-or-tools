@@ -1668,12 +1668,14 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
             });
             
             const renderVehiclesList = () => {
+                console.log('🔄 renderVehiclesList called, vehicles count:', vehicles.length);
                 mezziList.innerHTML = '';
                 if (vehicles.length === 0) {
                     mezziList.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-gray-500">Nessun mezzo inserito.</td></tr>';
                     return;
                 }
                 vehicles.forEach(v => {
+                    console.log(`  - Rendering vehicle: ${v.targa}, isAvailable: ${v.isAvailable}, id: ${v.id}`);
                     const tr = document.createElement('tr');
                     const isChecked = v.isAvailable ?? false;
                     const statusClass = isChecked ? 'bg-green-50' : 'bg-gray-50';
@@ -1750,16 +1752,30 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
             
             // Event listener separato per i checkbox di attivazione mezzi
             mezziList.addEventListener('change', (e) => {
+                console.log('Change event triggered on:', e.target);
+                console.log('Target type:', e.target.type);
+                console.log('Target action:', e.target.dataset.action);
+                
                 if (e.target.type === 'checkbox' && e.target.dataset.action === 'toggle-availability') {
                     const vehicleId = e.target.dataset.id;
+                    console.log('Vehicle ID:', vehicleId);
+                    console.log('All vehicles:', vehicles);
+                    
                     const vehicle = vehicles.find(v => v.id === vehicleId);
+                    console.log('Found vehicle:', vehicle);
+                    
                     if (vehicle) {
                         vehicle.isAvailable = e.target.checked;
+                        console.log(`Setting isAvailable to ${e.target.checked} for ${vehicle.targa}`);
                         saveVehicles();
                         renderVehiclesList(); // Aggiorna per cambiare il colore dello sfondo
                         renderAvailableVehiclesList();
-                        console.log(`Mezzo ${vehicle.targa} ${vehicle.isAvailable ? 'attivato' : 'disattivato'}`);
+                        console.log(`✅ Mezzo ${vehicle.targa} ${vehicle.isAvailable ? 'attivato' : 'disattivato'}`);
+                    } else {
+                        console.error('❌ Vehicle not found! ID:', vehicleId);
                     }
+                } else {
+                    console.log('Not a toggle-availability checkbox');
                 }
             });
             
