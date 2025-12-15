@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Checkbox Attivo</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .vehicle-row { padding: 10px; margin: 10px 0; border: 1px solid #ccc; }
+        .vehicle-row.active { background-color: #d4edda; }
+        .vehicle-row.inactive { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>Test Checkbox Attivazione Mezzi</h1>
+    
+    <p><strong>Istruzioni:</strong> Apri Console Browser (F12) e clicca sui checkbox. Dovresti vedere i log.</p>
+    
+    <div id="vehicleContainer"></div>
+    
+    <hr>
+    <h2>Debug Info</h2>
+    <pre id="debugInfo"></pre>
+
+    <script>
+        // Simula dati veicoli
+        let vehicles = [
+            { id: 'veicolo-1', targa: 'AA123BB', autista: 'Mario Rossi', payload: 3500, isAvailable: false },
+            { id: 'veicolo-2', targa: 'CC456DD', autista: 'Luigi Verdi', payload: 5000, isAvailable: true },
+            { id: 'veicolo-3', targa: 'EE789FF', autista: 'Giuseppe Bianchi', payload: 7000, isAvailable: false }
+        ];
+
+        const container = document.getElementById('vehicleContainer');
+        const debugInfo = document.getElementById('debugInfo');
+
+        // Funzione per salvare in localStorage
+        function saveVehicles() {
+            localStorage.setItem('testVehicles', JSON.stringify(vehicles));
+            console.log('💾 Vehicles saved to localStorage');
+            updateDebugInfo();
+        }
+
+        // Funzione per renderizzare veicoli
+        function renderVehicles() {
+            console.log('🔄 Rendering vehicles, count:', vehicles.length);
+            container.innerHTML = '';
+            
+            vehicles.forEach(v => {
+                const div = document.createElement('div');
+                div.className = `vehicle-row ${v.isAvailable ? 'active' : 'inactive'}`;
+                div.innerHTML = `
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" 
+                               data-id="${v.id}" 
+                               data-action="toggle-availability"
+                               ${v.isAvailable ? 'checked' : ''}
+                               style="width: 20px; height: 20px;">
+                        <span style="font-weight: bold;">${v.targa}</span>
+                        <span>- ${v.autista}</span>
+                        <span>(${v.payload} kg)</span>
+                        <span style="color: ${v.isAvailable ? 'green' : 'gray'};">
+                            ${v.isAvailable ? '✅ ATTIVO' : '❌ INATTIVO'}
+                        </span>
+                    </label>
+                `;
+                container.appendChild(div);
+                
+                console.log(`  - Vehicle: ${v.targa}, isAvailable: ${v.isAvailable}, id: ${v.id}`);
+            });
+        }
+
+        // Event listener con 'change'
+        container.addEventListener('change', (e) => {
+            console.log('🎯 Change event triggered!');
+            console.log('  - Target:', e.target);
+            console.log('  - Target type:', e.target.type);
+            console.log('  - Target action:', e.target.dataset.action);
+            console.log('  - Target id:', e.target.dataset.id);
+            console.log('  - Checked:', e.target.checked);
+            
+            if (e.target.type === 'checkbox' && e.target.dataset.action === 'toggle-availability') {
+                const vehicleId = e.target.dataset.id;
+                console.log('📍 Looking for vehicle ID:', vehicleId);
+                
+                const vehicle = vehicles.find(v => v.id === vehicleId);
+                console.log('🔍 Found vehicle:', vehicle);
+                
+                if (vehicle) {
+                    vehicle.isAvailable = e.target.checked;
+                    console.log(`✅ Vehicle ${vehicle.targa} is now: ${vehicle.isAvailable ? 'ACTIVE' : 'INACTIVE'}`);
+                    saveVehicles();
+                    renderVehicles();
+                } else {
+                    console.error('❌ Vehicle not found with ID:', vehicleId);
+                    console.error('Available IDs:', vehicles.map(v => v.id));
+                }
+            }
+        });
+
+        // Aggiorna info debug
+        function updateDebugInfo() {
+            debugInfo.textContent = JSON.stringify(vehicles, null, 2);
+        }
+
+        // Inizializza
+        renderVehicles();
+        updateDebugInfo();
+        console.log('✅ Test page loaded successfully');
+    </script>
+</body>
+</html>
