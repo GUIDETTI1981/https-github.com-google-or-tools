@@ -1743,16 +1743,23 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
                         renderVehiclesList();
                         renderAvailableVehiclesList();
                     }
-                } else if (action === 'toggle-availability') {
-                    const vehicle = vehicles.find(v => v.id === id);
+                } else if (action === 'rules') {
+                    openVehicleRulesModal(id);
+                }
+            });
+            
+            // Event listener separato per i checkbox di attivazione mezzi
+            mezziList.addEventListener('change', (e) => {
+                if (e.target.type === 'checkbox' && e.target.dataset.action === 'toggle-availability') {
+                    const vehicleId = e.target.dataset.id;
+                    const vehicle = vehicles.find(v => v.id === vehicleId);
                     if (vehicle) {
                         vehicle.isAvailable = e.target.checked;
                         saveVehicles();
                         renderVehiclesList(); // Aggiorna per cambiare il colore dello sfondo
                         renderAvailableVehiclesList();
+                        console.log(`Mezzo ${vehicle.targa} ${vehicle.isAvailable ? 'attivato' : 'disattivato'}`);
                     }
-                } else if (action === 'rules') {
-                    openVehicleRulesModal(id);
                 }
             });
             
