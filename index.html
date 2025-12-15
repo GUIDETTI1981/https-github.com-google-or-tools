@@ -2903,7 +2903,10 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
             };
             
             window.editVehicleRules = (id) => {
-                openVehicleRulesModal(vehicles.find(v => v.id === id));
+                const vehicle = vehicles.find(v => String(v.id) === String(id));
+                if (vehicle) {
+                    openVehicleRulesModal(String(vehicle.id));
+                }
             };
             
             window.exportAllData = () => {

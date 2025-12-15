@@ -1,327 +1,584 @@
-<!-- Centro Guide & Istruzioni -->
-<!-- Da inserire nell'index_redesign.html come view separata -->
-
-<div id="guide-view" class="view-content hidden">
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-1">Guida Operativa</h1>
-        <p class="text-sm text-gray-500">Impara ad usare il sistema in pochi minuti</p>
-    </div>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guida Operativa - Gestione Ritiri</title>
     
-    <!-- Quick Start Section -->
-    <div class="card p-8 mb-6">
-        <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">🚀 Avvio Rapido in 3 Passi</h2>
-        
-        <div class="grid grid-cols-3 gap-6">
-            <!-- Step 1 -->
-            <div class="text-center">
-                <div class="step active mx-auto mb-4">1</div>
-                <h3 class="font-bold text-gray-800 mb-2">Carica Dati</h3>
-                <p class="text-sm text-gray-600 mb-4">Importa anagrafiche e ordini dal gestionale o aggiungi manualmente</p>
-                <button class="btn-primary text-sm">
-                    <i class="fas fa-database"></i>
-                    Vai ad Anagrafiche
-                </button>
-            </div>
-            
-            <!-- Arrow -->
-            <div class="flex items-center justify-center">
-                <i class="fas fa-arrow-right text-3xl text-gray-300"></i>
-            </div>
-            
-            <!-- Step 2 -->
-            <div class="text-center">
-                <div class="step mx-auto mb-4">2</div>
-                <h3 class="font-bold text-gray-800 mb-2">Imposta Vincoli</h3>
-                <p class="text-sm text-gray-600 mb-4">Configura le regole di ottimizzazione secondo le tue esigenze</p>
-                <button class="btn-secondary text-sm">
-                    <i class="fas fa-sliders"></i>
-                    Vai a Configurazione
-                </button>
-            </div>
-            
-            <!-- Arrow -->
-            <div class="flex items-center justify-center">
-                <i class="fas fa-arrow-right text-3xl text-gray-300"></i>
-            </div>
-            
-            <!-- Step 3 -->
-            <div class="text-center">
-                <div class="step mx-auto mb-4">3</div>
-                <h3 class="font-bold text-gray-800 mb-2">Lancia Ottimizzazione</h3>
-                <p class="text-sm text-gray-600 mb-4">Avvia l'algoritmo e visualizza i risultati in tempo reale</p>
-                <button class="btn-secondary text-sm">
-                    <i class="fas fa-play"></i>
-                    Vai a Pianificazione
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    <div class="grid grid-cols-3 gap-6">
-        
-        <!-- Left: FAQ Accordion -->
-        <div class="col-span-2 space-y-4">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">❓ Domande Frequenti</h2>
-            
-            <!-- FAQ Item 1 -->
-            <div class="accordion-item">
-                <div class="accordion-header" data-accordion="faq1">
-                    <span class="font-semibold text-gray-800">Come importo i dati dal mio gestionale?</span>
-                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-                </div>
-                <div class="accordion-content" id="faq1">
-                    <div class="p-6 bg-gray-50 text-sm text-gray-600 space-y-3">
-                        <p>Puoi importare i dati in due modi:</p>
-                        <ol class="list-decimal list-inside space-y-2 pl-2">
-                            <li><strong>Import Automatico via API:</strong> Se il tuo gestionale ha API REST, configura le credenziali nelle Impostazioni.</li>
-                            <li><strong>Import Manuale CSV:</strong> Esporta i dati in formato CSV e caricali nella sezione Hub Anagrafiche.</li>
-                        </ol>
-                        <div class="p-3 bg-blue-50 border-l-4 border-blue-500 mt-3">
-                            <p class="text-blue-800 text-xs">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                <strong>Formati supportati:</strong> CSV, Excel (.xlsx), JSON
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- FAQ Item 2 -->
-            <div class="accordion-item">
-                <div class="accordion-header" data-accordion="faq2">
-                    <span class="font-semibold text-gray-800">Come funziona l'algoritmo di ottimizzazione?</span>
-                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-                </div>
-                <div class="accordion-content" id="faq2">
-                    <div class="p-6 bg-gray-50 text-sm text-gray-600 space-y-3">
-                        <p>Il sistema usa <strong>Google OR-Tools</strong>, una libreria di ottimizzazione combinatoria che risolve il problema di <strong>Vehicle Routing Problem (VRP)</strong>.</p>
-                        <div class="space-y-2 mt-3">
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Calcola le distanze tra tutte le fermate</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Applica i vincoli di capacità, tempo e zone</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Cerca la soluzione ottimale minimizzando km e tempi</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Rispetta le priorità (urgenze > prenotazioni > standard)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- FAQ Item 3 -->
-            <div class="accordion-item">
-                <div class="accordion-header" data-accordion="faq3">
-                    <span class="font-semibold text-gray-800">Cosa significano i colori nelle card dei risultati?</span>
-                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-                </div>
-                <div class="accordion-content" id="faq3">
-                    <div class="p-6 bg-gray-50 text-sm text-gray-600 space-y-3">
-                        <p>Ogni card ha un bordo colorato che indica la priorità:</p>
-                        <div class="space-y-2 mt-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-4 h-4 bg-red-500 rounded"></div>
-                                <span><strong>Rosso (Bordo Spesso):</strong> Urgenza - Priorità livello 2</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-4 h-4 bg-orange-500 rounded"></div>
-                                <span><strong>Arancione (Bordo Medio):</strong> Prenotazione - Priorità livello 1</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-4 h-4 bg-gray-300 rounded"></div>
-                                <span><strong>Grigio (Bordo Sottile):</strong> Standard - Priorità livello 0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- FAQ Item 4 -->
-            <div class="accordion-item">
-                <div class="accordion-header" data-accordion="faq4">
-                    <span class="font-semibold text-gray-800">Perché alcuni ritiri non vengono assegnati?</span>
-                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-                </div>
-                <div class="accordion-content" id="faq4">
-                    <div class="p-6 bg-gray-50 text-sm text-gray-600 space-y-3">
-                        <p>I ritiri non assegnati finiscono nella colonna "Non Assegnati" per questi motivi:</p>
-                        <ul class="space-y-2 mt-3">
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-times-circle text-red-500 mt-0.5"></i>
-                                <span><strong>Capacità insufficiente:</strong> Nessun mezzo ha abbastanza portata</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-times-circle text-red-500 mt-0.5"></i>
-                                <span><strong>Vincoli temporali:</strong> Time window troppo stretta o incompatibile</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-times-circle text-red-500 mt-0.5"></i>
-                                <span><strong>Zone incompatibili:</strong> Non abbinabile con altre zone nel giro</span>
-                            </li>
-                        </ul>
-                        <div class="p-3 bg-amber-50 border-l-4 border-amber-500 mt-3">
-                            <p class="text-amber-800 text-xs">
-                                <i class="fas fa-lightbulb mr-1"></i>
-                                <strong>Soluzione:</strong> Aggiungi più mezzi, rilassa i vincoli temporali o assegna manualmente con drag&drop
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- FAQ Item 5 -->
-            <div class="accordion-item">
-                <div class="accordion-header" data-accordion="faq5">
-                    <span class="font-semibold text-gray-800">Posso modificare manualmente i risultati?</span>
-                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-                </div>
-                <div class="accordion-content" id="faq5">
-                    <div class="p-6 bg-gray-50 text-sm text-gray-600 space-y-3">
-                        <p><strong>Sì!</strong> Puoi modificare i risultati in due modi:</p>
-                        <div class="space-y-3 mt-3">
-                            <div>
-                                <div class="font-semibold text-gray-800 mb-1">1. Drag & Drop</div>
-                                <p>Trascina le card tra le colonne per riassegnare i ritiri a mezzi diversi o spostarli tra mattino e pomeriggio.</p>
-                            </div>
-                            <div>
-                                <div class="font-semibold text-gray-800 mb-1">2. Modifica Giro</div>
-                                <p>Clicca sull'icona "modifica" di un giro per riordinare le fermate o aggiungerne di nuove.</p>
-                            </div>
-                        </div>
-                        <div class="p-3 bg-green-50 border-l-4 border-green-500 mt-3">
-                            <p class="text-green-800 text-xs">
-                                <i class="fas fa-check-circle mr-1"></i>
-                                Le modifiche manuali vengono salvate automaticamente
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- FAQ Item 6 -->
-            <div class="accordion-item">
-                <div class="accordion-header" data-accordion="faq6">
-                    <span class="font-semibold text-gray-800">Quanto tempo ci vuole per l'ottimizzazione?</span>
-                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-                </div>
-                <div class="accordion-content" id="faq6">
-                    <div class="p-6 bg-gray-50 text-sm text-gray-600 space-y-3">
-                        <p>Il tempo dipende dalla complessità del problema:</p>
-                        <div class="grid grid-cols-3 gap-3 mt-3">
-                            <div class="p-3 border border-green-200 bg-green-50 rounded text-center">
-                                <div class="text-2xl font-bold text-green-600">5-10s</div>
-                                <div class="text-xs text-green-700 mt-1">Piccolo<br>(&lt;20 fermate)</div>
-                            </div>
-                            <div class="p-3 border border-blue-200 bg-blue-50 rounded text-center">
-                                <div class="text-2xl font-bold text-blue-600">10-30s</div>
-                                <div class="text-xs text-blue-700 mt-1">Medio<br>(20-50 fermate)</div>
-                            </div>
-                            <div class="p-3 border border-amber-200 bg-amber-50 rounded text-center">
-                                <div class="text-2xl font-bold text-amber-600">30-60s</div>
-                                <div class="text-xs text-amber-700 mt-1">Grande<br>(&gt;50 fermate)</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Right: Quick Links & Resources -->
-        <div class="col-span-1 space-y-6">
-            
-            <!-- Quick Actions -->
-            <div class="card p-6">
-                <h3 class="font-bold text-gray-800 mb-4">⚡ Azioni Rapide</h3>
-                <div class="space-y-2">
-                    <a href="#" class="block p-3 rounded-lg hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
-                        <i class="fas fa-play-circle text-blue-600"></i>
-                        <span>Video Tutorial (5 min)</span>
-                    </a>
-                    <a href="#" class="block p-3 rounded-lg hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
-                        <i class="fas fa-file-pdf text-red-600"></i>
-                        <span>Scarica PDF Manuale</span>
-                    </a>
-                    <a href="#" class="block p-3 rounded-lg hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
-                        <i class="fas fa-download text-green-600"></i>
-                        <span>Template CSV Importazione</span>
-                    </a>
-                    <a href="#" class="block p-3 rounded-lg hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
-                        <i class="fas fa-headset text-purple-600"></i>
-                        <span>Contatta Supporto</span>
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Glossary -->
-            <div class="card p-6">
-                <h3 class="font-bold text-gray-800 mb-4">📖 Glossario</h3>
-                <div class="space-y-3 text-sm">
-                    <div>
-                        <div class="font-semibold text-gray-800">VRP</div>
-                        <div class="text-gray-600 text-xs">Vehicle Routing Problem - Problema di instradamento veicoli</div>
-                    </div>
-                    <div>
-                        <div class="font-semibold text-gray-800">Time Window</div>
-                        <div class="text-gray-600 text-xs">Finestra temporale entro cui deve avvenire un ritiro</div>
-                    </div>
-                    <div>
-                        <div class="font-semibold text-gray-800">Capacity</div>
-                        <div class="text-gray-600 text-xs">Portata massima del mezzo in kg</div>
-                    </div>
-                    <div>
-                        <div class="font-semibold text-gray-800">Soft Constraint</div>
-                        <div class="text-gray-600 text-xs">Vincolo non rigido, violabile con penalità</div>
-                    </div>
-                    <div>
-                        <div class="font-semibold text-gray-800">Hard Constraint</div>
-                        <div class="text-gray-600 text-xs">Vincolo rigido, non violabile mai</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Pro Tips -->
-            <div class="pro-tip">
-                <div class="text-sm">
-                    <div class="font-bold text-lg mb-2">💡 Suggerimenti</div>
-                    <ul class="space-y-2 opacity-90">
-                        <li>• Usa coordinate GPS precise per risultati migliori</li>
-                        <li>• Testa diverse configurazioni prima di produzione</li>
-                        <li>• Salva configurazioni frequenti come preset</li>
-                        <li>• Esporta i risultati in PDF per gli autisti</li>
-                    </ul>
-                </div>
-            </div>
-            
-        </div>
-        
-    </div>
-</div>
-
-<script>
-// Accordion Logic
-document.querySelectorAll('.accordion-header').forEach(header => {
-    header.addEventListener('click', function() {
-        const targetId = this.dataset.accordion;
-        const content = document.getElementById(targetId);
-        const icon = this.querySelector('i');
-        
-        // Toggle active state
-        content.classList.toggle('active');
-        
-        // Rotate icon
-        if (content.classList.contains('active')) {
-            icon.style.transform = 'rotate(180deg)';
-        } else {
-            icon.style.transform = 'rotate(0deg)';
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FAFBFC;
         }
-    });
-});
-</script>
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .accordion-item {
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .accordion-header {
+            cursor: pointer;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        
+        .accordion-header:hover {
+            background: #F9FAFB;
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .accordion-content.active {
+            max-height: 1000px;
+        }
+        
+        .accordion-icon {
+            transition: transform 0.3s;
+        }
+        
+        .accordion-item.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        
+        .step-card {
+            position: relative;
+            padding-left: 60px;
+        }
+        
+        .step-number {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 44px;
+            height: 44px;
+            background: #3B82F6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-blue {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+        
+        .badge-green {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .badge-purple {
+            background: #E9D5FF;
+            color: #6B21A8;
+        }
+        
+        .badge-orange {
+            background: #FED7AA;
+            color: #9A3412;
+        }
+        
+        .pro-tip {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pro-tip::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+    </style>
+</head>
+<body class="p-6">
+    
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-book-open text-blue-600 mr-3"></i>
+                Guida Operativa
+            </h1>
+            <p class="text-lg text-gray-600">Tutto quello che devi sapere per ottimizzare i tuoi ritiri con OR-Tools</p>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="card p-4 mb-8">
+            <div class="relative">
+                <input type="text" id="searchInput" placeholder="Cerca nella guida..." class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg">
+                <i class="fas fa-search absolute left-4 top-4 text-gray-400 text-xl"></i>
+            </div>
+        </div>
+        
+        <!-- Quick Start Steps -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-rocket text-green-600"></i>
+                Inizia in 3 Passi
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h3 class="font-bold text-lg text-gray-800 mb-2">Importa Dati</h3>
+                        <p class="text-sm text-gray-600 mb-4">Carica le anagrafiche (ceramiche, clienti, depositi, mezzi) e importa gli ordini da CSV.</p>
+                        <span class="badge badge-blue">
+                            <i class="fas fa-clock mr-1"></i>5 min
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card p-6">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3 class="font-bold text-lg text-gray-800 mb-2">Configura Vincoli</h3>
+                        <p class="text-sm text-gray-600 mb-4">Imposta i parametri OR-Tools: finestre orarie, capacità, zone e priorità.</p>
+                        <span class="badge badge-purple">
+                            <i class="fas fa-clock mr-1"></i>10 min
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card p-6">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3 class="font-bold text-lg text-gray-800 mb-2">Ottimizza e Pianifica</h3>
+                        <p class="text-sm text-gray-600 mb-4">Avvia l'ottimizzazione e visualizza i risultati su mappa interattiva.</p>
+                        <span class="badge badge-green">
+                            <i class="fas fa-clock mr-1"></i>2 min
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pro Tip -->
+        <div class="pro-tip mb-8">
+            <div class="relative z-10">
+                <div class="flex items-start gap-4">
+                    <div class="text-3xl">💡</div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2">Consiglio Pro</h3>
+                        <p class="text-white/90">Prima di avviare l'ottimizzazione, verifica che tutti gli ordini urgenti e prenotati abbiano indirizzi validi. Questo evita che vengano lasciati non assegnati.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Accordion FAQ -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-question-circle text-blue-600"></i>
+                Domande Frequenti
+            </h2>
+            
+            <div class="card overflow-hidden">
+                <!-- FAQ Item 1 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Come importo gli ordini da lavorare?</h3>
+                            <span class="badge badge-blue mt-1">
+                                <i class="fas fa-file-csv mr-1"></i>Import Dati
+                            </span>
+                        </div>
+                        <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0 bg-gray-50">
+                            <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                                <li>Vai alla sezione <strong>"Pianificazione"</strong> nel menu principale</li>
+                                <li>Clicca su <strong>"Importa Ordini"</strong> nel pannello "Ordini da Lavorare"</li>
+                                <li>Seleziona la data del giorno di ritiro</li>
+                                <li>Carica il file CSV con le colonne: Cliente, Ceramica, Peso, Tipo (urgente/prenotato/standard)</li>
+                                <li>Verifica il riepilogo e conferma l'importazione</li>
+                            </ol>
+                            <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                                <p class="text-sm text-blue-800">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    <strong>Nota:</strong> Il sistema controlla automaticamente che i clienti e le ceramiche esistano nelle anagrafiche.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 2 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Come funziona l'algoritmo OR-Tools?</h3>
+                            <span class="badge badge-purple mt-1">
+                                <i class="fas fa-brain mr-1"></i>Algoritmo
+                            </span>
+                        </div>
+                        <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0 bg-gray-50">
+                            <p class="text-gray-700 mb-4">
+                                OR-Tools utilizza un <strong>algoritmo di Vehicle Routing Problem (VRP)</strong> con Guided Local Search per trovare la soluzione ottimale. Il processo include:
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="p-4 bg-white rounded-lg">
+                                    <h4 class="font-semibold text-blue-600 mb-2">
+                                        <i class="fas fa-map-marked-alt mr-2"></i>Fase 1: Costruzione Iniziale
+                                    </h4>
+                                    <p class="text-sm text-gray-600">L'algoritmo crea una prima soluzione usando la strategia "Path Cheapest Arc"</p>
+                                </div>
+                                <div class="p-4 bg-white rounded-lg">
+                                    <h4 class="font-semibold text-green-600 mb-2">
+                                        <i class="fas fa-search mr-2"></i>Fase 2: Ricerca Locale
+                                    </h4>
+                                    <p class="text-sm text-gray-600">Migliora la soluzione scambiando e riordinando le fermate</p>
+                                </div>
+                                <div class="p-4 bg-white rounded-lg">
+                                    <h4 class="font-semibold text-purple-600 mb-2">
+                                        <i class="fas fa-balance-scale mr-2"></i>Fase 3: Vincoli
+                                    </h4>
+                                    <p class="text-sm text-gray-600">Rispetta capacità, finestre temporali, zone e priorità</p>
+                                </div>
+                                <div class="p-4 bg-white rounded-lg">
+                                    <h4 class="font-semibold text-orange-600 mb-2">
+                                        <i class="fas fa-chart-line mr-2"></i>Fase 4: Ottimizzazione
+                                    </h4>
+                                    <p class="text-sm text-gray-600">Minimizza costi totali (km, tempi, penalità)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 3 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Cosa fare se ci sono ordini non assegnati?</h3>
+                            <span class="badge badge-orange mt-1">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>Troubleshooting
+                            </span>
+                        </div>
+                        <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0 bg-gray-50">
+                            <p class="text-gray-700 mb-4">Gli ordini possono rimanere non assegnati per diversi motivi. Ecco come risolvere:</p>
+                            
+                            <div class="space-y-4">
+                                <div class="flex gap-4">
+                                    <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-weight-hanging text-red-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800 mb-1">Problema: Capacità Insufficiente</h4>
+                                        <p class="text-sm text-gray-600"><strong>Soluzione:</strong> Aggiungi più veicoli nella fascia oraria o aumenta la tolleranza di sovraccarico nelle impostazioni.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-4">
+                                    <div class="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-map-marker-alt text-yellow-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800 mb-1">Problema: Indirizzo Mancante o Errato</h4>
+                                        <p class="text-sm text-gray-600"><strong>Soluzione:</strong> Verifica che cliente/ceramica abbiano coordinate GPS valide nelle anagrafiche.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-4">
+                                    <div class="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-map-marked-alt text-purple-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800 mb-1">Problema: Zona Incompatibile</h4>
+                                        <p class="text-sm text-gray-600"><strong>Soluzione:</strong> Verifica le regole di compatibilità zone o aggiungi veicoli dedicati per quella zona.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-4">
+                                    <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-clock text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800 mb-1">Problema: Finestra Temporale Stretta</h4>
+                                        <p class="text-sm text-gray-600"><strong>Soluzione:</strong> Amplia le finestre orarie nelle impostazioni OR-Tools o dividi gli ordini in più fasce.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 4 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Come interpreto i risultati dell'ottimizzazione?</h3>
+                            <span class="badge badge-green mt-1">
+                                <i class="fas fa-chart-bar mr-1"></i>Risultati
+                            </span>
+                        </div>
+                        <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0 bg-gray-50">
+                            <p class="text-gray-700 mb-4">La pagina Risultati mostra una panoramica completa dei viaggi ottimizzati:</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="p-4 bg-blue-50 rounded-lg">
+                                    <div class="text-2xl font-bold text-blue-600 mb-1">🚛</div>
+                                    <h4 class="font-semibold text-gray-800 mb-1">Colonne Veicoli</h4>
+                                    <p class="text-xs text-gray-600">Ogni colonna rappresenta un viaggio con le fermate in ordine ottimale</p>
+                                </div>
+                                
+                                <div class="p-4 bg-green-50 rounded-lg">
+                                    <div class="text-2xl font-bold text-green-600 mb-1">📊</div>
+                                    <h4 class="font-semibold text-gray-800 mb-1">Statistiche</h4>
+                                    <p class="text-xs text-gray-600">Peso totale caricato e numero di fermate per veicolo</p>
+                                </div>
+                                
+                                <div class="p-4 bg-purple-50 rounded-lg">
+                                    <div class="text-2xl font-bold text-purple-600 mb-1">🗺️</div>
+                                    <h4 class="font-semibold text-gray-800 mb-1">Mappa Percorso</h4>
+                                    <p class="text-xs text-gray-600">Visualizza il percorso ottimizzato sulla mappa interattiva</p>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 bg-green-50 rounded-lg">
+                                <p class="text-sm text-green-800">
+                                    <i class="fas fa-lightbulb mr-2"></i>
+                                    <strong>Suggerimento:</strong> Puoi riorganizzare manualmente le fermate con drag & drop se necessario.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 5 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Quali formati CSV sono supportati per l'import?</h3>
+                            <span class="badge badge-blue mt-1">
+                                <i class="fas fa-file-csv mr-1"></i>Formati
+                            </span>
+                        </div>
+                        <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0 bg-gray-50">
+                            <p class="text-gray-700 mb-4">Il sistema supporta file CSV con queste colonne (ordine non importante):</p>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Colonna</th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Tipo</th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Esempio</th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Obbligatorio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm">
+                                        <tr class="border-t border-gray-100">
+                                            <td class="px-4 py-3 font-medium">Cliente</td>
+                                            <td class="px-4 py-3 text-gray-600">Testo</td>
+                                            <td class="px-4 py-3 text-gray-600">Rossi Mario</td>
+                                            <td class="px-4 py-3"><span class="badge badge-green">Sì</span></td>
+                                        </tr>
+                                        <tr class="border-t border-gray-100">
+                                            <td class="px-4 py-3 font-medium">Ceramica</td>
+                                            <td class="px-4 py-3 text-gray-600">Testo</td>
+                                            <td class="px-4 py-3 text-gray-600">Marazzi SpA</td>
+                                            <td class="px-4 py-3"><span class="badge badge-green">Sì</span></td>
+                                        </tr>
+                                        <tr class="border-t border-gray-100">
+                                            <td class="px-4 py-3 font-medium">Peso</td>
+                                            <td class="px-4 py-3 text-gray-600">Numero</td>
+                                            <td class="px-4 py-3 text-gray-600">1500</td>
+                                            <td class="px-4 py-3"><span class="badge badge-green">Sì</span></td>
+                                        </tr>
+                                        <tr class="border-t border-gray-100">
+                                            <td class="px-4 py-3 font-medium">Tipo</td>
+                                            <td class="px-4 py-3 text-gray-600">Testo</td>
+                                            <td class="px-4 py-3 text-gray-600">urgente / prenotato / standard</td>
+                                            <td class="px-4 py-3"><span class="badge badge-orange">No</span></td>
+                                        </tr>
+                                        <tr class="border-t border-gray-100">
+                                            <td class="px-4 py-3 font-medium">Fascia</td>
+                                            <td class="px-4 py-3 text-gray-600">Testo</td>
+                                            <td class="px-4 py-3 text-gray-600">mattino / pomeriggio</td>
+                                            <td class="px-4 py-3"><span class="badge badge-orange">No</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="mt-4 p-3 bg-yellow-50 rounded-lg">
+                                <p class="text-sm text-yellow-800">
+                                    <i class="fas fa-exclamation-circle mr-2"></i>
+                                    <strong>Attenzione:</strong> Il separatore deve essere virgola (,) o punto e virgola (;). Encoding UTF-8.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Glossario Tecnico -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-book text-purple-600"></i>
+                Glossario Tecnico
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="card p-5">
+                    <h4 class="font-bold text-gray-800 mb-2">VRP (Vehicle Routing Problem)</h4>
+                    <p class="text-sm text-gray-600">Problema di ottimizzazione che cerca di trovare il percorso ottimale per un flotta di veicoli per servire un insieme di clienti.</p>
+                </div>
+                
+                <div class="card p-5">
+                    <h4 class="font-bold text-gray-800 mb-2">Guided Local Search</h4>
+                    <p class="text-sm text-gray-600">Meta-euristica che guida la ricerca locale penalizzando temporaneamente le soluzioni già esplorate.</p>
+                </div>
+                
+                <div class="card p-5">
+                    <h4 class="font-bold text-gray-800 mb-2">Time Window</h4>
+                    <p class="text-sm text-gray-600">Finestra temporale entro cui un servizio deve essere completato (es. 8:00-12:00).</p>
+                </div>
+                
+                <div class="card p-5">
+                    <h4 class="font-bold text-gray-800 mb-2">Capacity Constraint</h4>
+                    <p class="text-sm text-gray-600">Vincolo di capacità massima (peso/volume) che un veicolo può trasportare.</p>
+                </div>
+                
+                <div class="card p-5">
+                    <h4 class="font-bold text-gray-800 mb-2">Penalità (Penalty)</h4>
+                    <p class="text-sm text-gray-600">Costo aggiuntivo applicato quando un vincolo soft viene violato (es. ritardo consegna).</p>
+                </div>
+                
+                <div class="card p-5">
+                    <h4 class="font-bold text-gray-800 mb-2">Solver Timeout</h4>
+                    <p class="text-sm text-gray-600">Tempo massimo (in secondi) che l'algoritmo ha per trovare la soluzione ottimale.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contatti Supporto -->
+        <div class="card p-8 bg-gradient-to-br from-blue-600 to-blue-700 text-white">
+            <div class="text-center">
+                <i class="fas fa-headset text-5xl mb-4 opacity-80"></i>
+                <h2 class="text-2xl font-bold mb-2">Serve ancora aiuto?</h2>
+                <p class="text-blue-100 mb-6">Il nostro team è pronto ad assisterti</p>
+                <div class="flex justify-center gap-4">
+                    <a href="mailto:support@gestioneritiri.it" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition">
+                        <i class="fas fa-envelope mr-2"></i>Contatta Supporto
+                    </a>
+                    <a href="#" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-400 transition">
+                        <i class="fas fa-video mr-2"></i>Video Tutorial
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <script>
+        // Accordion functionality
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const item = this.parentElement;
+                const content = item.querySelector('.accordion-content');
+                const isActive = item.classList.contains('active');
+                
+                // Close all other items
+                document.querySelectorAll('.accordion-item').forEach(i => {
+                    i.classList.remove('active');
+                    i.querySelector('.accordion-content').classList.remove('active');
+                });
+                
+                // Toggle current item
+                if (!isActive) {
+                    item.classList.add('active');
+                    content.classList.add('active');
+                }
+            });
+        });
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // If searching, expand all visible items
+            if (query.length > 2) {
+                document.querySelectorAll('.accordion-item').forEach(item => {
+                    if (item.style.display !== 'none') {
+                        item.classList.add('active');
+                        item.querySelector('.accordion-content').classList.add('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
