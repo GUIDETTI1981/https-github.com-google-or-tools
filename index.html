@@ -1969,19 +1969,40 @@ La soluzione deve essere realistica, fattibile e ottimizzata, con evidenza di co
 
                 try {
                     console.log('📥 Importing orders for date:', selectedDate);
-                    console.log('🔗 Using API:', API_RITIRI_ATTIVI_URL);
                     
-                    // Usa ritiri-attivi con GET e API key
-                    const response = await fetch(API_RITIRI_ATTIVI_URL, {
+                    // Aggiungi data come query parameter
+                    const apiUrl = selectedDate ? 
+                        `${API_RITIRI_ATTIVI_URL}?date=${encodeURIComponent(selectedDate)}` : 
+                        API_RITIRI_ATTIVI_URL;
+                    
+                    console.log('🔗 Using API:', apiUrl);
+                    
+                    // Prova prima con Authorization Bearer, poi fallback a x-api-key
+                    let response = await fetch(apiUrl, {
                         method: 'GET',
                         headers: { 
                             'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${API_KEY}`,
                             'x-api-key': API_KEY
                         }
                     });
 
+                    // Se fallisce con 403, prova senza Authorization header
+                    if (!response.ok && response.status === 403) {
+                        console.warn('⚠️ First attempt failed with 403, trying without Authorization header...');
+                        response = await fetch(API_RITIRI_ATTIVI_URL, {
+                            method: 'GET',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'x-api-key': API_KEY
+                            }
+                        });
+                    }
+
                     if (!response.ok) {
-                        throw new Error(`Errore API: ${response.status} ${response.statusText}`);
+                        const errorBody = await response.text();
+                        console.error('❌ API Error Response:', errorBody);
+                        throw new Error(`Errore API: ${response.status} ${response.statusText}\n${errorBody}`);
                     }
                     
                     const responseData = await response.json();
