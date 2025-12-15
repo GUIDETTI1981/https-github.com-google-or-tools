@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OR-Tools - Sistema Gestione Ritiri</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        :root {
+            --bg-primary: #FAFBFC;
+            --surface: #FFFFFF;
+            --text-primary: #1A202C;
+            --text-secondary: #718096;
+            --accent: #3B82F6;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --border: #E2E8F0;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        
+        /* Smooth Transitions */
+        * {
+            transition: all 0.2s ease;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #F7FAFC;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E0;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A0AEC0;
+        }
+        
+        /* Sidebar Navigation */
+        .nav-item {
+            position: relative;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .nav-item:hover {
+            background-color: #F7FAFC;
+            color: var(--accent);
+        }
+        
+        .nav-item.active {
+            background-color: #EBF5FF;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 70%;
+            background-color: var(--accent);
+            border-radius: 0 4px 4px 0;
+        }
+        
+        /* Tabs */
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .tab-button:hover {
+            color: var(--accent);
+            background-color: #F7FAFC;
+        }
+        
+        .tab-button.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            font-weight: 600;
+        }
+        
+        /* Table Hover Effect */
+        .table-row {
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .table-row:hover {
+            background-color: #F7FAFC;
+        }
+        
+        .table-row:hover .row-actions {
+            opacity: 1;
+        }
+        
+        .row-actions {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2563EB;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--text-primary);
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background-color: #CBD5E0;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        
+        .toggle-switch.active {
+            background-color: var(--accent);
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(24px);
+        }
+        
+        /* Range Slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #E2E8F0;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Accordion */
+        .accordion-item {
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .accordion-header {
+            padding: 1rem 1.5rem;
+            background-color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .accordion-header:hover {
+            background-color: #F7FAFC;
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-content.active {
+            max-height: 500px;
+        }
+        
+        /* Badge */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .badge-warning {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .badge-error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        /* Map Container */
+        #map {
+            height: 100%;
+            border-radius: 12px;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid #F3F4F6;
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Pro Tips Box */
+        .pro-tip {
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.2);
+        }
+        
+        /* Step Indicator */
+        .step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #E2E8F0;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        
+        .step.active {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+        }
+        
+        .step.completed {
+            background-color: var(--success);
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col">
+            
+            <!-- Logo -->
+            <div class="h-16 flex items-center px-6 border-b border-gray-200">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-route text-white text-sm"></i>
+                    </div>
+                    <span class="font-bold text-lg text-gray-800">RouteOptim</span>
+                </div>
+            </div>
+            
+            <!-- Navigation Items -->
+            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                <div class="nav-item active" data-view="hub">
+                    <i class="fas fa-database w-5"></i>
+                    <span>Hub Anagrafiche</span>
+                </div>
+                <div class="nav-item" data-view="config">
+                    <i class="fas fa-sliders w-5"></i>
+                    <span>Configurazione</span>
+                </div>
+                <div class="nav-item" data-view="planning">
+                    <i class="fas fa-calendar-check w-5"></i>
+                    <span>Pianificazione</span>
+                </div>
+                <div class="nav-item" data-view="results">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Risultati</span>
+                </div>
+                
+                <div class="border-t border-gray-200 my-4"></div>
+                
+                <div class="nav-item" data-view="guide">
+                    <i class="fas fa-book-open w-5"></i>
+                    <span>Guida Operativa</span>
+                </div>
+            </nav>
+            
+            <!-- User Menu -->
+            <div class="px-4 py-4 border-t border-gray-200">
+                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold">
+                        U
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-semibold text-gray-800">Utente</div>
+                        <div class="text-xs text-gray-500">Admin</div>
+                    </div>
+                    <i class="fas fa-ellipsis-v text-gray-400"></i>
+                </div>
+            </div>
+            
+        </aside>
+        
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- Top Header -->
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+                <div class="flex items-center gap-4 flex-1 max-w-2xl">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" 
+                               placeholder="Cerca in tutto il sistema..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-50 text-gray-600">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-50 text-gray-600">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Content Views -->
+            <main class="flex-1 overflow-y-auto p-6">
+                
+                <!-- Hub Anagrafiche View -->
+                <div id="hub-view" class="view-content">
+                    <div class="mb-6 flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800 mb-1">Hub Anagrafiche</h1>
+                            <p class="text-sm text-gray-500">Gestisci tutte le entità del sistema</p>
+                        </div>
+                        <button class="btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Aggiungi Nuovo
+                        </button>
+                    </div>
+                    
+                    <!-- Tabs -->
+                    <div class="card mb-6">
+                        <div class="flex border-b border-gray-200">
+                            <button class="tab-button active" data-entity="ceramics">
+                                <i class="fas fa-industry mr-2"></i>
+                                Ceramiche
+                            </button>
+                            <button class="tab-button" data-entity="clients">
+                                <i class="fas fa-users mr-2"></i>
+                                Clienti
+                            </button>
+                            <button class="tab-button" data-entity="deposits">
+                                <i class="fas fa-warehouse mr-2"></i>
+                                Depositi
+                            </button>
+                            <button class="tab-button" data-entity="vehicles">
+                                <i class="fas fa-truck mr-2"></i>
+                                Mezzi
+                            </button>
+                        </div>
+                        
+                        <!-- Filters Bar -->
+                        <div class="p-4 flex items-center gap-3 border-b border-gray-200 bg-gray-50">
+                            <div class="relative flex-1 max-w-md">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <input type="text" 
+                                       placeholder="Cerca per nome, zona, città..." 
+                                       class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <button class="btn-secondary text-sm">
+                                <i class="fas fa-filter mr-2"></i>
+                                Filtri Avanzati
+                            </button>
+                            <button class="btn-secondary text-sm">
+                                <i class="fas fa-download mr-2"></i>
+                                Esporta
+                            </button>
+                            <div class="flex gap-1 ml-auto">
+                                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-600">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-blue-600 bg-blue-50">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Data Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b border-gray-200">
+                                        <th class="px-6 py-3 text-left">
+                                            <input type="checkbox" class="rounded">
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Nome
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Zona
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Città
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Stato
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Azioni
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body" class="divide-y divide-gray-200">
+                                    <!-- Sample Rows -->
+                                    <tr class="table-row">
+                                        <td class="px-6 py-4">
+                                            <input type="checkbox" class="rounded">
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-industry text-blue-600"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold text-gray-800">Ceramica Example</div>
+                                                    <div class="text-sm text-gray-500">Codice: CER001</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">
+                                            FIORANO 1
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">
+                                            Fiorano Modenese (MO)
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="badge badge-success">Attivo</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="row-actions flex items-center gap-2">
+                                                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-50 text-blue-600" title="Modifica">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-600" title="Visualizza">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-red-50 text-red-600" title="Elimina">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- More rows... -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                            <div class="text-sm text-gray-600">
+                                Mostrando <span class="font-semibold">1-10</span> di <span class="font-semibold">45</span> risultati
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:bg-gray-50 text-gray-600">
+                                    <i class="fas fa-chevron-left text-xs"></i>
+                                </button>
+                                <button class="w-8 h-8 flex items-center justify-center rounded bg-blue-600 text-white">1</button>
+                                <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:bg-gray-50 text-gray-600">2</button>
+                                <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:bg-gray-50 text-gray-600">3</button>
+                                <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:bg-gray-50 text-gray-600">
+                                    <i class="fas fa-chevron-right text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configuration View (Continued in next message due to length) -->
+                
+            </main>
+            
+        </div>
+        
+    </div>
+    
+    <script>
+        // Navigation Switch
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                const view = this.dataset.view;
+                // Show corresponding view
+                console.log('Switching to view:', view);
+            });
+        });
+        
+        // Tab Switch
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const entity = this.dataset.entity;
+                // Load entity data
+                console.log('Loading entity:', entity);
+            });
+        });
+    </script>
+    
+</body>
+</html>

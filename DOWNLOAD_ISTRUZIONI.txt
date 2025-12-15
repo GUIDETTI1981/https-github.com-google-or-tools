@@ -1,0 +1,144 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                   📥 COME SCARICARE LA WEB APP                       ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ METODO 1: DOWNLOAD ARCHIVIO COMPLETO ⭐ (CONSIGLIATO)                │
+└──────────────────────────────────────────────────────────────────────┘
+
+🔗 Scarica da questo URL:
+
+https://8000-i1d1tb5i6gnzkgewpmnk0-8f57ffe2.sandbox.novita.ai/webapp_ortools_ritiri.tar.gz
+
+📦 Dimensione: ~57KB (compressa)
+✅ Contiene tutti i file necessari
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ METODO 2: DOWNLOAD FILE SINGOLI                                     │
+└──────────────────────────────────────────────────────────────────────┘
+
+🌐 URL Base:
+https://8000-i1d1tb5i6gnzkgewpmnk0-8f57ffe2.sandbox.novita.ai/
+
+📂 Scarica questi file:
+  ✓ index.html                    (Frontend - 132KB)
+  ✓ api.py                        (Backend API - 6KB)
+  ✓ optimizer.py                  (Motore OR-Tools - 18KB)
+  ✓ requirements.txt              (Dipendenze)
+  ✓ README.md                     (Documentazione)
+  ✓ INSTALLAZIONE_LOCALE.md       (Guida installazione)
+  ✓ start_services.sh             (Script Linux/macOS)
+  ✓ start_services.bat            (Script Windows)
+  ✓ test_integration.py           (Test)
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ INSTALLAZIONE RAPIDA                                                 │
+└──────────────────────────────────────────────────────────────────────┘
+
+🪟 WINDOWS:
+  1. Estrai: tar -xzf webapp_ortools_ritiri.tar.gz
+  2. Entra nella cartella: cd webapp
+  3. Doppio click su: start_services.bat
+  4. Apri browser: http://localhost:8000
+
+🐧 LINUX / 🍎 macOS:
+  1. Estrai: tar -xzf webapp_ortools_ritiri.tar.gz
+  2. Entra nella cartella: cd webapp
+  3. Esegui: ./start_services.sh
+  4. Apri browser: http://localhost:8000
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ PREREQUISITI                                                         │
+└──────────────────────────────────────────────────────────────────────┘
+
+✅ Python 3.8 o superiore
+✅ pip (gestore pacchetti Python)
+✅ Connessione internet (solo per prima installazione)
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ INSTALLAZIONE MANUALE DIPENDENZE                                    │
+└──────────────────────────────────────────────────────────────────────┘
+
+Se lo script automatico non funziona:
+
+  pip install -r requirements.txt
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ AVVIO MANUALE SERVIZI                                                │
+└──────────────────────────────────────────────────────────────────────┘
+
+📍 Terminal 1 - API Backend:
+  python api.py
+
+📍 Terminal 2 - Frontend:
+  python -m http.server 8000
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ CONFIGURAZIONE URL API (Per uso locale)                             │
+└──────────────────────────────────────────────────────────────────────┘
+
+Modifica index.html alla riga ~1800:
+
+SOSTITUISCI:
+  https://5000-i1d1tb5i6gnzkgewpmnk0-8f57ffe2.sandbox.novita.ai
+
+CON:
+  http://localhost:5000
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST INSTALLAZIONE                                                   │
+└──────────────────────────────────────────────────────────────────────┘
+
+🧪 Verifica che tutto funzioni:
+
+  python test_integration.py
+
+📊 Output atteso:
+  ✅ Health check OK
+  ✅ Ottimizzazione completata!
+  🎉 Tutti i test sono passati!
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ DOCUMENTAZIONE                                                       │
+└──────────────────────────────────────────────────────────────────────┘
+
+📖 README.md                 - Guida completa
+📋 INSTALLAZIONE_LOCALE.md   - Guida installazione dettagliata
+📄 DEPLOYMENT_SUMMARY.md     - Riepilogo tecnico
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SUPPORTO                                                             │
+└──────────────────────────────────────────────────────────────────────┘
+
+❓ Problemi? Consulta:
+  - INSTALLAZIONE_LOCALE.md (sezione Troubleshooting)
+  - README.md
+  - Log: tail -f /tmp/ortools_api.log
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ LINK UTILI                                                           │
+└──────────────────────────────────────────────────────────────────────┘
+
+🔗 Archivio completo:
+https://8000-i1d1tb5i6gnzkgewpmnk0-8f57ffe2.sandbox.novita.ai/webapp_ortools_ritiri.tar.gz
+
+🔗 Documentazione online:
+https://8000-i1d1tb5i6gnzkgewpmnk0-8f57ffe2.sandbox.novita.ai/README.md
+
+🔗 Guida installazione:
+https://8000-i1d1tb5i6gnzkgewpmnk0-8f57ffe2.sandbox.novita.ai/INSTALLAZIONE_LOCALE.md
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                  🎉 Pronto per il download!                          ║
+╚══════════════════════════════════════════════════════════════════════╝

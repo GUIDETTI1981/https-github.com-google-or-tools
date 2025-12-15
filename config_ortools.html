@@ -1,0 +1,385 @@
+<!-- Pannello Configurazione OR-Tools -->
+<!-- Da inserire nell'index_redesign.html come view separata -->
+
+<div id="config-view" class="view-content hidden">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-1">Impostazioni Ottimizzazione</h1>
+        <p class="text-sm text-gray-500">Configura i vincoli per l'algoritmo OR-Tools</p>
+    </div>
+    
+    <div class="grid grid-cols-12 gap-6">
+        
+        <!-- Sidebar Menu -->
+        <div class="col-span-3">
+            <div class="card p-4 sticky top-6">
+                <h3 class="text-sm font-semibold text-gray-600 uppercase mb-4">Sezioni</h3>
+                <nav class="space-y-1">
+                    <a href="#temporal" class="block px-3 py-2 rounded-lg text-sm font-medium bg-blue-50 text-blue-700">
+                        <i class="fas fa-clock mr-2"></i>Vincoli Temporali
+                    </a>
+                    <a href="#capacity" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
+                        <i class="fas fa-weight mr-2"></i>Capacità e Carico
+                    </a>
+                    <a href="#zones" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
+                        <i class="fas fa-map-marked-alt mr-2"></i>Zone Geografiche
+                    </a>
+                    <a href="#priority" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
+                        <i class="fas fa-star mr-2"></i>Priorità
+                    </a>
+                    <a href="#penalties" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Penalità
+                    </a>
+                    <a href="#advanced" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
+                        <i class="fas fa-cogs mr-2"></i>Avanzate
+                    </a>
+                </nav>
+                
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <button class="btn-primary w-full justify-center">
+                        <i class="fas fa-save"></i>
+                        Salva Configurazione
+                    </button>
+                    <button class="btn-secondary w-full justify-center mt-2">
+                        <i class="fas fa-undo"></i>
+                        Ripristina Default
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Configuration Panel -->
+        <div class="col-span-9 space-y-6">
+            
+            <!-- Vincoli Temporali -->
+            <section id="temporal" class="card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-clock text-blue-600"></i>
+                            Vincoli Temporali
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1">Configura le finestre orarie e i tempi di viaggio</p>
+                    </div>
+                    <div class="toggle-switch active" id="toggle-temporal"></div>
+                </div>
+                
+                <!-- Time Windows -->
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">Finestra Mattino</label>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <label class="text-xs text-gray-500 block mb-1">Inizio</label>
+                                <input type="time" value="06:00" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                            </div>
+                            <div class="text-gray-400 text-sm font-bold mt-5">—</div>
+                            <div class="flex-1">
+                                <label class="text-xs text-gray-500 block mb-1">Fine</label>
+                                <input type="time" value="12:00" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">Finestra Pomeriggio</label>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <label class="text-xs text-gray-500 block mb-1">Inizio</label>
+                                <input type="time" value="14:00" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                            </div>
+                            <div class="text-gray-400 text-sm font-bold mt-5">—</div>
+                            <div class="flex-1">
+                                <label class="text-xs text-gray-500 block mb-1">Fine</label>
+                                <input type="time" value="18:00" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Max Trip Duration -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-sm font-semibold text-gray-700">Durata Massima per Giro</label>
+                        <span class="text-sm font-bold text-blue-600" id="trip-duration-value">360 minuti</span>
+                    </div>
+                    <input type="range" min="180" max="600" value="360" step="30" 
+                           class="w-full" id="trip-duration-slider">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>3h</span>
+                        <span>6h</span>
+                        <span>10h</span>
+                    </div>
+                </div>
+                
+                <!-- Waiting Time -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-sm font-semibold text-gray-700">Tempo di Attesa Massimo</label>
+                        <span class="text-sm font-bold text-blue-600" id="wait-time-value">120 minuti</span>
+                    </div>
+                    <input type="range" min="0" max="240" value="120" step="30" 
+                           class="w-full" id="wait-time-slider">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>0h</span>
+                        <span>2h</span>
+                        <span>4h</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Capacità e Carico -->
+            <section id="capacity" class="card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-weight text-green-600"></i>
+                            Capacità e Carico
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1">Gestisci i vincoli di peso e volume</p>
+                    </div>
+                    <div class="toggle-switch active" id="toggle-capacity"></div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Strict Capacity -->
+                    <div class="p-4 border border-gray-200 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-sm font-semibold text-gray-700">Capacità Rigida</label>
+                            <div class="toggle-switch active"></div>
+                        </div>
+                        <p class="text-xs text-gray-500">Non superare mai il limite di portata del mezzo</p>
+                    </div>
+                    
+                    <!-- Heavy Vehicle Rule -->
+                    <div class="p-4 border border-gray-200 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-sm font-semibold text-gray-700">Regola Mezzi Pesanti</label>
+                            <div class="toggle-switch active"></div>
+                        </div>
+                        <p class="text-xs text-gray-500">Camion >12t non su carichi <2t (salvo urgenze)</p>
+                    </div>
+                </div>
+                
+                <!-- Capacity Warning Threshold -->
+                <div class="mt-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-sm font-semibold text-gray-700">Soglia Avviso Capacità</label>
+                        <span class="text-sm font-bold text-amber-600" id="capacity-threshold-value">85%</span>
+                    </div>
+                    <input type="range" min="50" max="100" value="85" step="5" 
+                           class="w-full" id="capacity-threshold-slider">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>50%</span>
+                        <span>75%</span>
+                        <span>100%</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        Avviso quando un mezzo supera questa soglia di carico
+                    </p>
+                </div>
+            </section>
+            
+            <!-- Zone Geografiche -->
+            <section id="zones" class="card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-map-marked-alt text-purple-600"></i>
+                            Zone Geografiche
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1">Configura le regole di compatibilità tra zone</p>
+                    </div>
+                    <div class="toggle-switch active" id="toggle-zones"></div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="p-4 border-2 border-blue-200 bg-blue-50 rounded-lg">
+                        <div class="font-semibold text-sm text-blue-800 mb-2">Gruppo A</div>
+                        <div class="text-xs text-blue-600 space-y-1">
+                            <div>• Solignano</div>
+                            <div>• Fiorano 1-2</div>
+                            <div>• Sassuolo 1-2</div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 border-2 border-green-200 bg-green-50 rounded-lg">
+                        <div class="font-semibold text-sm text-green-800 mb-2">Gruppo B</div>
+                        <div class="text-xs text-green-600 space-y-1">
+                            <div>• Scandiano</div>
+                            <div>• Casalgrande</div>
+                            <div>• S.Antonino</div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 border-2 border-purple-200 bg-purple-50 rounded-lg">
+                        <div class="font-semibold text-sm text-purple-800 mb-2">Gruppo C</div>
+                        <div class="text-xs text-purple-600 space-y-1">
+                            <div>• Rubiera</div>
+                            <div>• Villalunga</div>
+                            <div>• Roteglia</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-exclamation-triangle text-amber-600 mt-1"></i>
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold text-amber-800 mb-1">Esclusioni Speciali</div>
+                            <p class="text-xs text-amber-700">
+                                Alcune ceramiche non possono essere abbinate ad altre nella stessa route.
+                                Configurabile in "Avanzate".
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Priorità -->
+            <section id="priority" class="card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-star text-yellow-600"></i>
+                            Gestione Priorità
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1">Definisci l'importanza relativa dei ritiri</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Urgenze -->
+                    <div class="flex items-center justify-between p-4 border border-red-200 bg-red-50 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-fire text-red-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-sm text-red-800">Urgenze (Livello 2)</div>
+                                <div class="text-xs text-red-600">Priorità assoluta - Assegnazione garantita</div>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-bold text-red-600">100%</div>
+                    </div>
+                    
+                    <!-- Prenotazioni -->
+                    <div class="flex items-center justify-between p-4 border border-orange-200 bg-orange-50 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-check text-orange-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-sm text-orange-800">Prenotazioni (Livello 1)</div>
+                                <div class="text-xs text-orange-600">Alta priorità - Rispetta time windows</div>
+                            </div>
+                        </div>
+                        <div>
+                            <input type="range" min="50" max="100" value="80" class="w-32">
+                            <span class="text-sm font-bold text-orange-600 ml-2">80%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Standard -->
+                    <div class="flex items-center justify-between p-4 border border-gray-200 bg-gray-50 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-box text-gray-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-sm text-gray-800">Standard (Livello 0)</div>
+                                <div class="text-xs text-gray-600">Priorità normale - Ottimizzazione basata su efficienza</div>
+                            </div>
+                        </div>
+                        <div>
+                            <input type="range" min="0" max="100" value="50" class="w-32">
+                            <span class="text-sm font-bold text-gray-600 ml-2">50%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Penalità -->
+            <section id="penalties" class="card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                            Penalità e Soft Constraints
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1">Definisci i costi per violare vincoli non critici</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-semibold text-gray-700">Penalità Nodi Non Assegnati</label>
+                            <span class="text-sm font-bold text-blue-600">100,000</span>
+                        </div>
+                        <input type="range" min="10000" max="1000000" value="100000" step="10000" class="w-full">
+                        <p class="text-xs text-gray-500 mt-1">Costo per ogni fermata non servita</p>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-semibold text-gray-700">Penalità Violazione Time Window</label>
+                            <span class="text-sm font-bold text-blue-600">1,000</span>
+                        </div>
+                        <input type="range" min="100" max="10000" value="1000" step="100" class="w-full">
+                        <p class="text-xs text-gray-500 mt-1">Costo per minuto fuori dalla finestra oraria</p>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-semibold text-gray-700">Penalità Zone Incompatibili</label>
+                            <span class="text-sm font-bold text-blue-600">5,000</span>
+                        </div>
+                        <input type="range" min="500" max="50000" value="5000" step="500" class="w-full">
+                        <p class="text-xs text-gray-500 mt-1">Costo per abbinare zone non compatibili</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Pro Tips Box -->
+            <div class="pro-tip">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-lightbulb text-2xl"></i>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-lg mb-2">💡 Consigli Pro</h3>
+                        <ul class="text-sm space-y-1 opacity-90">
+                            <li>• Finestre temporali troppo strette riducono la flessibilità dell'algoritmo</li>
+                            <li>• Penalità alte forzano il rispetto dei vincoli, penalità basse permettono soluzioni più creative</li>
+                            <li>• Abilita solo i vincoli necessari per ottenere soluzioni più rapide</li>
+                            <li>• Testa diverse configurazioni con il pulsante "Test Configurazione"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+    </div>
+</div>
+
+<script>
+// Toggle Switches
+document.querySelectorAll('.toggle-switch').forEach(toggle => {
+    toggle.addEventListener('click', function() {
+        this.classList.toggle('active');
+    });
+});
+
+// Range Sliders with Value Display
+document.getElementById('trip-duration-slider')?.addEventListener('input', function(e) {
+    document.getElementById('trip-duration-value').textContent = e.target.value + ' minuti';
+});
+
+document.getElementById('wait-time-slider')?.addEventListener('input', function(e) {
+    document.getElementById('wait-time-value').textContent = e.target.value + ' minuti';
+});
+
+document.getElementById('capacity-threshold-slider')?.addEventListener('input', function(e) {
+    document.getElementById('capacity-threshold-value').textContent = e.target.value + '%';
+});
+</script>

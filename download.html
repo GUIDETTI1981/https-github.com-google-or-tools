@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download - Sistema Gestione Ritiri OR-Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-12">
+    <div class="max-w-4xl mx-auto px-4">
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 mb-8">
+            <div class="text-center">
+                <i class="fa-solid fa-download text-6xl text-blue-600 mb-4"></i>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Download Web App</h1>
+                <h2 class="text-xl text-gray-600">Sistema Gestione Ritiri con OR-Tools</h2>
+            </div>
+        </div>
+
+        <!-- Metodo 1: Archivio Completo -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div class="flex items-center mb-4">
+                <span class="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-xl mr-4">1</span>
+                <h3 class="text-2xl font-bold text-gray-800">Download Archivio Completo ⭐</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Scarica tutto in un unico file compresso (consigliato)</p>
+            
+            <a href="webapp_ortools_ritiri_completo.tar.gz" 
+               class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition transform hover:scale-105"
+               download>
+                <i class="fa-solid fa-file-zipper mr-3 text-2xl"></i>
+                <div class="text-left">
+                    <div class="text-lg">webapp_ortools_ritiri_completo.tar.gz</div>
+                    <div class="text-sm opacity-75">~64KB compressi</div>
+                </div>
+            </a>
+
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p class="text-sm text-gray-700">
+                    <i class="fa-solid fa-info-circle text-blue-600 mr-2"></i>
+                    Include: Frontend, Backend API, Motore OR-Tools, Script avvio, Documentazione completa
+                </p>
+            </div>
+        </div>
+
+        <!-- Metodo 2: File Singoli -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div class="flex items-center mb-4">
+                <span class="bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-xl mr-4">2</span>
+                <h3 class="text-2xl font-bold text-gray-800">Download File Singoli</h3>
+            </div>
+            <p class="text-gray-600 mb-6">Scarica solo i file che ti servono</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Frontend -->
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition">
+                    <h4 class="font-bold text-gray-800 mb-2">
+                        <i class="fa-solid fa-desktop text-purple-600 mr-2"></i>Frontend
+                    </h4>
+                    <a href="index.html" download class="text-blue-600 hover:underline text-sm block mb-1">
+                        <i class="fa-solid fa-download mr-1"></i>index.html (132KB)
+                    </a>
+                    <a href="index_localhost.html" download class="text-blue-600 hover:underline text-sm block">
+                        <i class="fa-solid fa-download mr-1"></i>index_localhost.html (versione locale)
+                    </a>
+                </div>
+
+                <!-- Backend -->
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition">
+                    <h4 class="font-bold text-gray-800 mb-2">
+                        <i class="fa-solid fa-server text-green-600 mr-2"></i>Backend
+                    </h4>
+                    <a href="api.py" download class="text-blue-600 hover:underline text-sm block mb-1">
+                        <i class="fa-solid fa-download mr-1"></i>api.py (6KB)
+                    </a>
+                    <a href="optimizer.py" download class="text-blue-600 hover:underline text-sm block">
+                        <i class="fa-solid fa-download mr-1"></i>optimizer.py (18KB)
+                    </a>
+                </div>
+
+                <!-- Dipendenze -->
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition">
+                    <h4 class="font-bold text-gray-800 mb-2">
+                        <i class="fa-solid fa-puzzle-piece text-orange-600 mr-2"></i>Dipendenze
+                    </h4>
+                    <a href="requirements.txt" download class="text-blue-600 hover:underline text-sm block">
+                        <i class="fa-solid fa-download mr-1"></i>requirements.txt
+                    </a>
+                </div>
+
+                <!-- Script -->
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition">
+                    <h4 class="font-bold text-gray-800 mb-2">
+                        <i class="fa-solid fa-terminal text-blue-600 mr-2"></i>Script Avvio
+                    </h4>
+                    <a href="start_services.sh" download class="text-blue-600 hover:underline text-sm block mb-1">
+                        <i class="fa-solid fa-download mr-1"></i>start_services.sh (Linux/macOS)
+                    </a>
+                    <a href="start_services.bat" download class="text-blue-600 hover:underline text-sm block">
+                        <i class="fa-solid fa-download mr-1"></i>start_services.bat (Windows)
+                    </a>
+                </div>
+
+                <!-- Documentazione -->
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition col-span-2">
+                    <h4 class="font-bold text-gray-800 mb-2">
+                        <i class="fa-solid fa-book text-red-600 mr-2"></i>Documentazione
+                    </h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="README.md" download class="text-blue-600 hover:underline text-sm">
+                            <i class="fa-solid fa-download mr-1"></i>README.md
+                        </a>
+                        <a href="INSTALLAZIONE_LOCALE.md" download class="text-blue-600 hover:underline text-sm">
+                            <i class="fa-solid fa-download mr-1"></i>INSTALLAZIONE_LOCALE.md
+                        </a>
+                        <a href="DEPLOYMENT_SUMMARY.md" download class="text-blue-600 hover:underline text-sm">
+                            <i class="fa-solid fa-download mr-1"></i>DEPLOYMENT_SUMMARY.md
+                        </a>
+                        <a href="DOWNLOAD_ISTRUZIONI.txt" download class="text-blue-600 hover:underline text-sm">
+                            <i class="fa-solid fa-download mr-1"></i>DOWNLOAD_ISTRUZIONI.txt
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Test -->
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition col-span-2">
+                    <h4 class="font-bold text-gray-800 mb-2">
+                        <i class="fa-solid fa-flask text-yellow-600 mr-2"></i>Test
+                    </h4>
+                    <a href="test_integration.py" download class="text-blue-600 hover:underline text-sm">
+                        <i class="fa-solid fa-download mr-1"></i>test_integration.py (8.6KB)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Installazione Rapida -->
+        <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl shadow-xl p-8 text-white mb-6">
+            <h3 class="text-2xl font-bold mb-4">
+                <i class="fa-solid fa-rocket mr-2"></i>Installazione Rapida
+            </h3>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Windows -->
+                <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                    <h4 class="font-bold mb-2">
+                        <i class="fa-brands fa-windows mr-2"></i>Windows
+                    </h4>
+                    <ol class="text-sm space-y-1">
+                        <li>1. Estrai l'archivio</li>
+                        <li>2. Entra nella cartella webapp</li>
+                        <li>3. Doppio click su <code class="bg-black bg-opacity-30 px-1 rounded">start_services.bat</code></li>
+                        <li>4. Apri <code class="bg-black bg-opacity-30 px-1 rounded">http://localhost:8000</code></li>
+                    </ol>
+                </div>
+
+                <!-- Linux/macOS -->
+                <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                    <h4 class="font-bold mb-2">
+                        <i class="fa-brands fa-linux mr-2"></i><i class="fa-brands fa-apple mr-2"></i>Linux / macOS
+                    </h4>
+                    <ol class="text-sm space-y-1">
+                        <li>1. Estrai: <code class="bg-black bg-opacity-30 px-1 rounded">tar -xzf *.tar.gz</code></li>
+                        <li>2. Entra: <code class="bg-black bg-opacity-30 px-1 rounded">cd webapp</code></li>
+                        <li>3. Esegui: <code class="bg-black bg-opacity-30 px-1 rounded">./start_services.sh</code></li>
+                        <li>4. Apri <code class="bg-black bg-opacity-30 px-1 rounded">http://localhost:8000</code></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prerequisiti -->
+        <div class="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-3">
+                <i class="fa-solid fa-exclamation-triangle text-yellow-600 mr-2"></i>Prerequisiti
+            </h3>
+            <ul class="space-y-2 text-gray-700">
+                <li><i class="fa-solid fa-check text-green-600 mr-2"></i>Python 3.8 o superiore</li>
+                <li><i class="fa-solid fa-check text-green-600 mr-2"></i>pip (gestore pacchetti Python)</li>
+                <li><i class="fa-solid fa-check text-green-600 mr-2"></i>Connessione internet (solo prima installazione)</li>
+            </ul>
+        </div>
+
+        <!-- Link Utili -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fa-solid fa-link mr-2"></i>Link Utili
+            </h3>
+            <ul class="space-y-3">
+                <li>
+                    <a href="README.md" target="_blank" class="text-blue-600 hover:underline flex items-center">
+                        <i class="fa-solid fa-book-open mr-2"></i>Documentazione Completa
+                    </a>
+                </li>
+                <li>
+                    <a href="INSTALLAZIONE_LOCALE.md" target="_blank" class="text-blue-600 hover:underline flex items-center">
+                        <i class="fa-solid fa-download mr-2"></i>Guida Installazione
+                    </a>
+                </li>
+                <li>
+                    <a href="/" class="text-blue-600 hover:underline flex items-center">
+                        <i class="fa-solid fa-home mr-2"></i>Torna all'Applicazione
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-gray-600">
+            <p class="text-sm">
+                <i class="fa-solid fa-code mr-2"></i>
+                Powered by <strong>Google OR-Tools</strong>
+            </p>
+            <p class="text-xs mt-2">Sistema Gestione Ritiri - © 2024</p>
+        </div>
+    </div>
+</body>
+</html>
