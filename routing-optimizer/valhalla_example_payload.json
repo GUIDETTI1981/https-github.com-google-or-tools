@@ -1,0 +1,90 @@
+{
+  "_comment": "Esempio di richiesta Valhalla Matrix API per routing camion",
+  "_documentation": "https://valhalla.readthedocs.io/en/latest/api/matrix/api-reference/",
+  
+  "sources": [
+    {"lat": 41.9028, "lon": 12.4964},
+    {"lat": 41.9100, "lon": 12.5000},
+    {"lat": 41.8800, "lon": 12.4800}
+  ],
+  
+  "targets": [
+    {"lat": 41.9028, "lon": 12.4964},
+    {"lat": 41.9100, "lon": 12.5000},
+    {"lat": 41.8800, "lon": 12.4800}
+  ],
+  
+  "costing": "truck",
+  
+  "costing_options": {
+    "truck": {
+      "_comment_weight": "Peso totale del camion in tonnellate",
+      "weight": 21.77,
+      
+      "_comment_height": "Altezza massima in metri (per ponti/tunnel)",
+      "height": 4.11,
+      
+      "_comment_width": "Larghezza in metri (per strade strette)",
+      "width": 2.6,
+      
+      "_comment_length": "Lunghezza totale in metri",
+      "length": 21.64,
+      
+      "_comment_axle_load": "Carico per asse in tonnellate",
+      "axle_load": 9.07,
+      
+      "_comment_axle_count": "Numero di assi del camion",
+      "axle_count": 5,
+      
+      "_comment_hazmat": "Trasporta merci pericolose? true/false",
+      "hazmat": false,
+      
+      "_comment_use_highways": "Preferenza autostrade (0.0-1.0)",
+      "use_highways": 1.0,
+      
+      "_comment_use_tolls": "Accetta pedaggi? (0.0-1.0)",
+      "use_tolls": 1.0,
+      
+      "_comment_use_tracks": "Usa strade non asfaltate? (0.0-1.0)",
+      "use_tracks": 0.0,
+      
+      "_comment_top_speed": "Velocità massima in km/h",
+      "top_speed": 90.0,
+      
+      "_comment_fixed_speed": "0 = usa velocità strada, >0 = velocità fissa",
+      "fixed_speed": 0.0
+    }
+  },
+  
+  "units": "kilometers",
+  
+  "_example_response": {
+    "sources_to_targets": [
+      [
+        {"distance": 0.0, "time": 0},
+        {"distance": 2.456, "time": 189},
+        {"distance": 3.124, "time": 245}
+      ],
+      [
+        {"distance": 2.456, "time": 189},
+        {"distance": 0.0, "time": 0},
+        {"distance": 4.892, "time": 378}
+      ],
+      [
+        {"distance": 3.124, "time": 245},
+        {"distance": 4.892, "time": 378},
+        {"distance": 0.0, "time": 0}
+      ]
+    ],
+    "units": "kilometers"
+  },
+  
+  "_notes": [
+    "distance è in kilometri nella risposta",
+    "time è in secondi",
+    "Il client Python converte km → metri e arrotonda per eccesso",
+    "Percorsi impossibili hanno distance/time = null",
+    "Valhalla rispetta automaticamente restrizioni stradali per il truck",
+    "hazmat=true evita tunnel e strade con divieto merci pericolose"
+  ]
+}

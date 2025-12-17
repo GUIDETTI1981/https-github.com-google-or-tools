@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI + OR-Tools
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: routing-optimizer-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OSRM_HOST=osrm
+      - OSRM_PORT=5000
+      - VALHALLA_HOST=valhalla
+      - VALHALLA_PORT=8002
+      - USE_OSRM=true
+      - USE_VALHALLA=true
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - osrm
+      - valhalla
+    networks:
+      - routing-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # OSRM Backend Server (Multi-Level Dijkstra Algorithm)
+  osrm:
+    image: osrm/osrm-backend:latest
+    container_name: routing-optimizer-osrm
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mappa pre-processata (italy-latest)
+      - ./osrm-data:/data
+    networks:
+      - routing-network
+    # MLD (Multi-Level Dijkstra) - più veloce per query multiple
+    command: osrm-routed --algorithm mld /data/italy-latest.osrm --max-table-size 10000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Valhalla Routing Engine (Truck routing with physical constraints)
+  valhalla:
+    image: gisops/valhalla:latest
+    container_name: routing-optimizer-valhalla
+    ports:
+      - "8002:8002"
+    volumes:
+      # Mappa pre-processata + tile routing
+      - ./valhalla-data:/custom_files
+    environment:
+      - tile_urls=file:///custom_files/valhalla_tiles
+      - serve_tiles=True
+      - use_tiles_ignore_pbf=True
+      - build_tar=False
+    networks:
+      - routing-network
+    command: >
+      bash -c "
+      if [ -f /custom_files/valhalla.json ]; then
+        echo '✅ Valhalla config found, starting server on port 8002...';
+        valhalla_service /custom_files/valhalla.json 1;
+      else
+        echo '❌ ERROR: valhalla.json not found in /custom_files';
+        echo 'Run initialization script: ./init_valhalla.sh italy';
+        echo 'This will download map data and build routing tiles';
+        exit 1;
+      fi
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  # Frontend React + Vite (opzionale, per deploy completo)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: routing-optimizer-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - routing-network
+    command: npm run dev -- --host 0.0.0.0
+
+networks:
+  routing-network:
+    driver: bridge
+
+volumes:
+  osrm-data:
+    driver: local
+  valhalla-data:
+    driver: local
