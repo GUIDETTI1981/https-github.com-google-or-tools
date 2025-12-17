@@ -17,7 +17,12 @@ from .vrp_solver_osrm import VRPSolverOSRM
 from .vrp_solver_routing import VRPSolverWithRoutingEngines
 from .services.osrm_client import OSRMClient, OSRMClientError
 from .services.valhalla_client import ValhallaClient, ValhallaClientError, TruckSpecs
+from .services.address_sanitizer import AddressSanitizer, get_address_sanitizer
+from .services.geocoder_service import GeocoderService, GeocoderError, get_geocoder_service
+from .geocoding_pipeline import GeocodingPipeline, get_geocoding_pipeline
+from .models import OrderWithAddress, OptimizationWithGeocodingResult
 import os
+import time
 
 # Configurazione logging
 logging.basicConfig(level=logging.INFO)
@@ -345,6 +350,291 @@ async def get_valhalla_status() -> Dict:
             "is_available": False,
             "message": f"Errore: {str(e)}"
         }
+
+
+@app.get("/api/photon/status", tags=["Photon"])
+async def get_photon_status() -> Dict:
+    """
+    Verifica stato dettagliato del servizio Photon (Geocoder)
+    """
+    try:
+        geocoder = GeocoderService()
+        
+        # Health check
+        is_available = geocoder.health_check()
+        
+        # Info dettagliate
+        info = geocoder.get_info()
+        
+        return {
+            "status": "available" if is_available else "unavailable",
+            "enabled": os.getenv('USE_PHOTON', 'false').lower() == 'true',
+            "host": info["host"],
+            "port": info["port"],
+            "base_url": info["base_url"],
+            "language": info["language"],
+            "default_bias": info["default_bias"],
+            "supported_cities": info["supported_cities"],
+            "is_available": is_available,
+            "message": "Photon geocoder is operational" if is_available else "Photon is not responding"
+        }
+    except GeocoderError as e:
+        return {
+            "status": "error",
+            "enabled": os.getenv('USE_PHOTON', 'false').lower() == 'true',
+            "is_available": False,
+            "message": str(e)
+        }
+    except Exception as e:
+        logger.error(f"Errore verifica Photon: {e}", exc_info=True)
+        return {
+            "status": "error",
+            "enabled": False,
+            "is_available": False,
+            "message": f"Errore: {str(e)}"
+        }
+
+
+@app.post("/api/geocode", tags=["Geocoding"])
+async def geocode_address(request: Dict) -> Dict:
+    """
+    Converte un indirizzo in coordinate geografiche (geocoding)
+    
+    Body:
+        {
+            "address": "Via Roma 1, Milano",
+            "clean": true  (opzionale, default: true)
+        }
+    
+    Returns:
+        {
+            "success": true,
+            "original_address": "v. roma  1 - milano",
+            "cleaned_address": "Via Roma 1, Milano",
+            "latitude": 45.4642,
+            "longitude": 9.1900,
+            "confidence": 0.9,
+            "city": "Milano",
+            "country": "Italia"
+        }
+    """
+    try:
+        address = request.get("address", "").strip()
+        should_clean = request.get("clean", True)
+        
+        if not address:
+            raise HTTPException(status_code=400, detail="Address is required")
+        
+        logger.info(f"📍 Geocoding request: '{address}'")
+        
+        # Step 1: Pulizia indirizzo (opzionale)
+        cleaned_address = address
+        if should_clean:
+            sanitizer = get_address_sanitizer()
+            cleaned_address = sanitizer.clean(address)
+            logger.info(f"  Cleaned: '{address}' → '{cleaned_address}'")
+        
+        # Step 2: Geocoding
+        geocoder = get_geocoder_service()
+        result = geocoder.geocode(cleaned_address)
+        
+        if result is None:
+            return {
+                "success": False,
+                "original_address": address,
+                "cleaned_address": cleaned_address,
+                "message": "Address not found"
+            }
+        
+        logger.info(f"  ✅ Geocoded: ({result.latitude:.6f}, {result.longitude:.6f})")
+        
+        return {
+            "success": True,
+            "original_address": address,
+            "cleaned_address": cleaned_address,
+            "latitude": result.latitude,
+            "longitude": result.longitude,
+            "confidence": result.confidence,
+            "city": result.city,
+            "country": result.country,
+            "osm_type": result.osm_type
+        }
+        
+    except GeocoderError as e:
+        logger.error(f"Geocoding failed: {e}")
+        raise HTTPException(status_code=503, detail=f"Geocoding service error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Geocoding error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
+
+@app.post("/api/optimize-with-geocoding", response_model=OptimizationWithGeocodingResult, tags=["Optimization"])
+async def optimize_routes_with_geocoding(request: Dict) -> OptimizationWithGeocodingResult:
+    """
+    Ottimizza percorsi con geocoding automatico degli indirizzi
+    
+    Pipeline:
+    1. Ricezione ordini con indirizzi testuali (non coordinate)
+    2. Pulizia automatica indirizzi (AddressSanitizer)
+    3. Geocoding (indirizzo → coordinate) via Photon
+    4. Solo ordini con coordinate valide passano al VRP solver
+    5. Ordini falliti vengono ritornati in "geocoding_errors"
+    
+    Body:
+        {
+            "orders_with_addresses": [
+                {
+                    "id": "ORD001",
+                    "customer_name": "Cliente A",
+                    "address": "Via Roma 1, Milano",
+                    "demand": 15.5
+                },
+                ...
+            ],
+            "fleet_config": {...},
+            "ortools_config": {...},
+            "vehicle_specs": {...},  (opzionale)
+            "bias_city": "milano"  (opzionale, default: "roma")
+        }
+    
+    Returns:
+        OptimizationWithGeocodingResult con:
+        - routes: Route ottimizzate
+        - geocoding_errors: Ordini non geocodificati
+        - statistiche complete
+    """
+    start_time = time.time()
+    
+    try:
+        logger.info("=" * 80)
+        logger.info("🚀 OPTIMIZATION WITH GEOCODING START")
+        logger.info("=" * 80)
+        
+        # Estrai parametri
+        orders_with_addresses_data = request.get("orders_with_addresses", [])
+        fleet_config_data = request.get("fleet_config")
+        ortools_config_data = request.get("ortools_config")
+        vehicle_specs_data = request.get("vehicle_specs")
+        bias_city = request.get("bias_city", "roma")
+        
+        # Validazione
+        if not orders_with_addresses_data:
+            raise HTTPException(status_code=400, detail="orders_with_addresses is required")
+        if not fleet_config_data:
+            raise HTTPException(status_code=400, detail="fleet_config is required")
+        if not ortools_config_data:
+            raise HTTPException(status_code=400, detail="ortools_config is required")
+        
+        # Parse orders
+        from .models import FleetConfiguration, ORToolsConfiguration, VehicleSpecifications
+        
+        orders_with_addresses = [OrderWithAddress(**order) for order in orders_with_addresses_data]
+        fleet_config = FleetConfiguration(**fleet_config_data)
+        ortools_config = ORToolsConfiguration(**ortools_config_data)
+        vehicle_specs = VehicleSpecifications(**vehicle_specs_data) if vehicle_specs_data else None
+        
+        logger.info(f"📦 Orders received: {len(orders_with_addresses)}")
+        logger.info(f"📍 Bias city: {bias_city}")
+        
+        # Step 1: Geocoding Pipeline
+        logger.info("🗺️  Step 1: Geocoding Pipeline")
+        pipeline = get_geocoding_pipeline()
+        
+        valid_orders, geocoding_errors, geocoding_stats = pipeline.process_orders(
+            orders_with_addresses,
+            bias_city=bias_city
+        )
+        
+        logger.info(f"✅ Valid orders: {len(valid_orders)}")
+        logger.info(f"❌ Failed orders: {len(geocoding_errors)}")
+        
+        # Se nessun ordine valido, ritorna errore
+        if len(valid_orders) == 0:
+            return OptimizationWithGeocodingResult(
+                success=False,
+                routes=[],
+                total_distance=0.0,
+                total_load=0.0,
+                computation_time=time.time() - start_time,
+                num_orders_served=0,
+                num_vehicles_used=0,
+                geocoding_errors=geocoding_errors,
+                message=f"Geocoding fallito per tutti i {len(orders_with_addresses)} ordini"
+            )
+        
+        # Step 2: VRP Optimization
+        logger.info("🚗 Step 2: VRP Optimization")
+        
+        # Crea OptimizationRequest
+        from .models import OptimizationRequest
+        
+        opt_request = OptimizationRequest(
+            orders=valid_orders,
+            fleet_config=fleet_config,
+            ortools_config=ortools_config,
+            vehicle_specs=vehicle_specs
+        )
+        
+        # Validazione capacità
+        total_demand = sum(order.demand for order in valid_orders)
+        total_capacity = fleet_config.num_vehicles * fleet_config.vehicle_capacity
+        
+        if total_demand > total_capacity:
+            logger.warning(
+                f"⚠️  Domanda totale ({total_demand} kg) supera capacità totale ({total_capacity} kg)"
+            )
+        
+        # Determina solver
+        use_osrm = os.getenv('USE_OSRM', 'false').lower() == 'true'
+        use_valhalla = os.getenv('USE_VALHALLA', 'false').lower() == 'true'
+        
+        vehicle_type = "car"
+        if vehicle_specs:
+            vehicle_type = vehicle_specs.vehicle_type.lower()
+        
+        logger.info(f"🚗/🚛 Vehicle type: {vehicle_type}")
+        
+        # Usa smart solver se routing engines attivi
+        if use_osrm or use_valhalla:
+            logger.info("🧠 Using Smart Routing Solver")
+            solver = VRPSolverWithRoutingEngines(opt_request)
+        else:
+            logger.info("📐 Using Basic Solver (Haversine)")
+            solver = VRPSolver(opt_request)
+        
+        # Risolvi VRP
+        result = solver.solve()
+        
+        # Aggiungi geocoding errors al risultato
+        computation_time = time.time() - start_time
+        
+        logger.info("=" * 80)
+        logger.info("🎉 OPTIMIZATION WITH GEOCODING COMPLETE")
+        logger.info(f"⏱️  Total time: {computation_time:.2f}s")
+        logger.info(f"📊 Geocoding: {len(valid_orders)}/{len(orders_with_addresses)} success ({geocoding_stats.success_rate:.1f}%)")
+        logger.info(f"📊 VRP: {result.num_orders_served}/{len(valid_orders)} served")
+        logger.info("=" * 80)
+        
+        return OptimizationWithGeocodingResult(
+            success=result.success,
+            routes=result.routes,
+            total_distance=result.total_distance,
+            total_load=result.total_load,
+            computation_time=computation_time,
+            num_orders_served=result.num_orders_served,
+            num_vehicles_used=result.num_vehicles_used,
+            geocoding_errors=geocoding_errors,
+            message=f"Ottimizzazione completata. Geocoding: {geocoding_stats.success_rate:.1f}% success. VRP: {result.num_orders_served} ordini serviti."
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Optimization with geocoding failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Errore durante l'ottimizzazione con geocoding: {str(e)}"
+        )
 
 
 # Entry point per uvicorn

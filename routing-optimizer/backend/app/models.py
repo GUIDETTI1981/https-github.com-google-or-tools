@@ -14,6 +14,35 @@ class Order(BaseModel):
     demand: float = Field(..., gt=0, description="Peso del pacco in kg")
 
 
+class OrderWithAddress(BaseModel):
+    """Modello per un ordine con indirizzo testuale (senza coordinate)"""
+    id: str
+    customer_name: str
+    address: str = Field(..., description="Indirizzo testuale completo")
+    demand: float = Field(..., gt=0, description="Peso del pacco in kg")
+
+
+class GeocodingError(BaseModel):
+    """Errore di geocoding per un ordine"""
+    order_id: str
+    customer_name: str
+    address: str
+    error_message: str
+
+
+class OptimizationWithGeocodingResult(BaseModel):
+    """Risultato dell'ottimizzazione con geocoding"""
+    success: bool
+    routes: List["VehicleRoute"]
+    total_distance: float
+    total_load: float
+    computation_time: float
+    num_orders_served: int
+    num_vehicles_used: int
+    geocoding_errors: List[GeocodingError] = Field(default_factory=list)
+    message: Optional[str] = None
+
+
 class DepotLocation(BaseModel):
     """Coordinate del deposito"""
     latitude: float = Field(..., ge=-90, le=90)

@@ -22,6 +22,7 @@ services:
     depends_on:
       - osrm
       - valhalla
+      - photon
     networks:
       - routing-network
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -83,6 +84,39 @@ services:
       retries: 3
       start_period: 90s
 
+  # Photon Geocoder (OpenStreetMap-based geocoding)
+  photon:
+    image: komoot/photon:latest
+    container_name: routing-optimizer-photon
+    ports:
+      - "2322:2322"
+    volumes:
+      # Volume persistente per evitare re-indicizzazione
+      - ./photon-data:/photon/photon_data
+    networks:
+      - routing-network
+    environment:
+      - JAVA_OPTS=-Xmx2g -Xms1g
+    command: >
+      bash -c "
+      if [ -d /photon/photon_data/elasticsearch ]; then
+        echo '✅ Photon database found, starting geocoder on port 2322...';
+        java -jar photon-*.jar;
+      else
+        echo '❌ ERROR: Photon database not initialized';
+        echo 'Run initialization script: ./init_photon.sh italy';
+        echo 'This will download OSM data and build Photon index';
+        exit 1;
+      fi
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2322/api?q=Roma"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
   # Frontend React + Vite (opzionale, per deploy completo)
   frontend:
     build:
@@ -110,4 +144,6 @@ volumes:
   osrm-data:
     driver: local
   valhalla-data:
+    driver: local
+  photon-data:
     driver: local
