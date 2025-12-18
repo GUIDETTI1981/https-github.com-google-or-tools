@@ -1,9 +1,16 @@
 """
 Main FastAPI Application - Routing Optimizer
+
+ASYNC ARCHITECTURE WITH CELERY:
+- Heavy OR-Tools computations are offloaded to Celery workers
+- API returns 202 Accepted with task_id immediately
+- Frontend polls GET /tasks/{task_id} for results
+- Redis serves as message broker and result backend
 """
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Dict
+from fastapi.responses import JSONResponse
+from typing import Dict, Optional
 import logging
 
 from .models import (
@@ -23,6 +30,11 @@ from .geocoding_pipeline import GeocodingPipeline, get_geocoding_pipeline
 from .models import OrderWithAddress, OptimizationWithGeocodingResult
 import os
 import time
+
+# Celery imports
+from .core.celery_app import celery_app, get_celery_info
+from .tasks.vrp_tasks import solve_vrp_task, solve_vrp_with_geocoding_task
+from celery.result import AsyncResult
 
 # Configurazione logging
 logging.basicConfig(level=logging.INFO)
@@ -98,85 +110,281 @@ async def get_crm_orders(num_orders: int = 20) -> CRMOrdersResponse:
         raise HTTPException(status_code=500, detail=f"Errore CRM: {str(e)}")
 
 
-@app.post("/api/optimize", response_model=OptimizationResult, tags=["Optimization"])
-async def optimize_routes(request: OptimizationRequest) -> OptimizationResult:
+@app.post("/api/optimize", tags=["Optimization"], status_code=status.HTTP_202_ACCEPTED)
+async def optimize_routes_async(request: OptimizationRequest) -> Dict:
     """
-    Ottimizza i percorsi di consegna usando OR-Tools CVRP
+    🚀 ASYNC ENDPOINT: Enqueues VRP optimization task to Celery
+    
+    Returns 202 Accepted immediately with task_id.
+    Frontend should poll GET /api/tasks/{task_id} for results.
     
     Args:
         request: Configurazione completa (ordini, flotta, parametri OR-Tools)
         
     Returns:
-        OptimizationResult con i percorsi ottimizzati
+        202 Accepted with:
+        {
+            "task_id": "abc-123-def-456",
+            "status": "PENDING",
+            "message": "Optimization task enqueued successfully",
+            "poll_url": "/api/tasks/abc-123-def-456"
+        }
+        
+    Example:
+        >>> POST /api/optimize
+        >>> {"orders": [...], "fleet_config": {...}}
+        >>> 
+        >>> Response (202 Accepted):
+        >>> {
+        >>>   "task_id": "abc-123",
+        >>>   "status": "PENDING",
+        >>>   "poll_url": "/api/tasks/abc-123"
+        >>> }
+        >>>
+        >>> # Frontend polls for result
+        >>> GET /api/tasks/abc-123  (status: "PENDING" or "STARTED")
+        >>> GET /api/tasks/abc-123  (status: "SUCCESS" → result ready!)
     """
     try:
-        logger.info("=== Inizio ottimizzazione percorsi ===")
-        logger.info(f"Ordini: {len(request.orders)}")
-        logger.info(f"Veicoli: {request.fleet_config.num_vehicles}")
-        logger.info(f"Capacità veicolo: {request.fleet_config.vehicle_capacity} kg")
-        logger.info(f"Strategia: {request.ortools_config.first_solution_strategy}")
-        logger.info(f"Metaheuristic: {request.ortools_config.local_search_metaheuristic}")
+        logger.info("=" * 70)
+        logger.info("🚀 ASYNC OPTIMIZATION REQUEST RECEIVED")
+        logger.info("=" * 70)
+        logger.info(f"   Orders: {len(request.orders)}")
+        logger.info(f"   Vehicles: {request.fleet_config.num_vehicles}")
+        logger.info(f"   Vehicle Capacity: {request.fleet_config.vehicle_capacity} kg")
+        logger.info(f"   Strategy: {request.ortools_config.first_solution_strategy}")
+        logger.info(f"   Metaheuristic: {request.ortools_config.local_search_metaheuristic}")
         
-        # Validazione ordini
+        # Validazione base
         if len(request.orders) == 0:
             raise HTTPException(
                 status_code=400,
                 detail="Nessun ordine da ottimizzare"
             )
         
-        # Validazione capacità
-        total_demand = sum(order.demand for order in request.orders)
-        total_capacity = request.fleet_config.num_vehicles * request.fleet_config.vehicle_capacity
+        # Converti request a dict per serializzazione JSON
+        request_data = request.model_dump()
         
-        if total_demand > total_capacity:
-            logger.warning(
-                f"Domanda totale ({total_demand} kg) supera capacità totale ({total_capacity} kg)"
-            )
+        # Enqueue task to Celery
+        logger.info("📤 Enqueuing task to Celery worker...")
         
-        # Usa il nuovo smart solver che seleziona automaticamente il routing engine
-        # basato sul tipo di veicolo (car/van → OSRM, truck → Valhalla)
-        use_osrm = os.getenv('USE_OSRM', 'false').lower() == 'true'
-        use_valhalla = os.getenv('USE_VALHALLA', 'false').lower() == 'true'
+        task = solve_vrp_task.delay(request_data)
         
-        # Determina tipo di veicolo dalla richiesta
-        vehicle_type = "car"
-        if request.vehicle_specs:
-            vehicle_type = request.vehicle_specs.vehicle_type.lower()
+        logger.info(f"✅ Task enqueued successfully: {task.id}")
+        logger.info("=" * 70)
         
-        logger.info(f"🚗/🚛 Vehicle type: {vehicle_type}")
-        logger.info(f"⚙️  Routing engines: OSRM={use_osrm}, Valhalla={use_valhalla}")
-        
-        # Usa smart solver se OSRM o Valhalla sono attivi
-        if use_osrm or use_valhalla:
-            logger.info("🧠 Using Smart Routing Solver (OSRM/Valhalla)")
-            solver = VRPSolverWithRoutingEngines(request)
-        else:
-            # Fallback a solver base con Haversine
-            logger.info("📐 Using Basic Solver (Haversine distance)")
-            solver = VRPSolver(request)
-        
-        result = solver.solve()
-        
-        if result.success:
-            logger.info("=== Ottimizzazione completata con successo ===")
-            logger.info(f"Distanza totale: {result.total_distance} km")
-            logger.info(f"Carico totale: {result.total_load} kg")
-            logger.info(f"Veicoli utilizzati: {result.num_vehicles_used}/{request.fleet_config.num_vehicles}")
-            logger.info(f"Ordini serviti: {result.num_orders_served}/{len(request.orders)}")
-            logger.info(f"Tempo computazione: {result.computation_time}s")
-        else:
-            logger.warning(f"Ottimizzazione fallita: {result.message}")
-        
-        return result
+        return {
+            "task_id": task.id,
+            "status": "PENDING",
+            "message": "Optimization task enqueued successfully. Poll /api/tasks/{task_id} for results.",
+            "poll_url": f"/api/tasks/{task.id}",
+            "num_orders": len(request.orders),
+            "num_vehicles": request.fleet_config.num_vehicles
+        }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Errore durante l'ottimizzazione: {str(e)}", exc_info=True)
+        logger.error(f"❌ Failed to enqueue task: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Errore durante l'ottimizzazione: {str(e)}"
+            detail=f"Failed to enqueue optimization task: {str(e)}"
         )
+
+
+@app.get("/api/tasks/{task_id}", tags=["Optimization"])
+async def get_task_status(task_id: str) -> Dict:
+    """
+    🔍 POLLING ENDPOINT: Get status and result of async optimization task
+    
+    Frontend should call this endpoint every 2-5 seconds until status is SUCCESS or FAILURE.
+    
+    Args:
+        task_id: Celery task ID (received from POST /api/optimize)
+        
+    Returns:
+        Task status with one of:
+        - PENDING: Task is waiting in queue
+        - STARTED: Task is being processed
+        - SUCCESS: Task completed successfully (result included)
+        - FAILURE: Task failed (error included)
+        
+    Example:
+        >>> GET /api/tasks/abc-123-def-456
+        >>>
+        >>> # While processing:
+        >>> {
+        >>>   "task_id": "abc-123",
+        >>>   "status": "STARTED",
+        >>>   "progress": 30,
+        >>>   "stage": "Computing distance matrix",
+        >>>   "result": null
+        >>> }
+        >>>
+        >>> # When complete:
+        >>> {
+        >>>   "task_id": "abc-123",
+        >>>   "status": "SUCCESS",
+        >>>   "result": {
+        >>>     "success": true,
+        >>>     "routes": [...],
+        >>>     "total_distance": 123.45,
+        >>>     ...
+        >>>   }
+        >>> }
+    """
+    try:
+        # Get task result from Celery
+        task_result = AsyncResult(task_id, app=celery_app)
+        
+        logger.debug(f"📊 Task {task_id} status: {task_result.state}")
+        
+        # Build response based on task state
+        response = {
+            "task_id": task_id,
+            "status": task_result.state
+        }
+        
+        if task_result.state == 'PENDING':
+            # Task is waiting in queue
+            response.update({
+                "message": "Task is waiting in queue",
+                "progress": 0
+            })
+            
+        elif task_result.state == 'STARTED':
+            # Task is being processed
+            info = task_result.info or {}
+            response.update({
+                "message": "Task is being processed",
+                "progress": info.get('progress', 0),
+                "stage": info.get('stage', 'Processing'),
+                "meta": info
+            })
+            
+        elif task_result.state == 'SUCCESS':
+            # Task completed successfully
+            result = task_result.result
+            response.update({
+                "message": "Optimization completed successfully",
+                "result": result,
+                "progress": 100
+            })
+            
+        elif task_result.state == 'FAILURE':
+            # Task failed
+            error_info = task_result.info or {}
+            response.update({
+                "message": "Task failed",
+                "error": str(error_info.get('error', 'Unknown error')),
+                "error_type": error_info.get('error_type', 'Exception'),
+                "progress": 0
+            })
+            
+        elif task_result.state == 'RETRY':
+            # Task is being retried
+            response.update({
+                "message": "Task is being retried",
+                "progress": 0
+            })
+            
+        else:
+            # Unknown state
+            response.update({
+                "message": f"Task state: {task_result.state}",
+                "progress": 0
+            })
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"❌ Error retrieving task status: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve task status: {str(e)}"
+        )
+
+
+@app.delete("/api/tasks/{task_id}", tags=["Optimization"])
+async def cancel_task(task_id: str) -> Dict:
+    """
+    ❌ CANCEL TASK: Revoke/cancel a running task
+    
+    Args:
+        task_id: Celery task ID
+        
+    Returns:
+        Cancellation confirmation
+        
+    Example:
+        >>> DELETE /api/tasks/abc-123
+        >>> {
+        >>>   "task_id": "abc-123",
+        >>>   "status": "revoked",
+        >>>   "message": "Task cancelled successfully"
+        >>> }
+    """
+    try:
+        # Revoke task (terminate=True to kill worker process)
+        celery_app.control.revoke(task_id, terminate=True, signal='SIGKILL')
+        
+        logger.info(f"❌ Task {task_id} revoked")
+        
+        return {
+            "task_id": task_id,
+            "status": "revoked",
+            "message": "Task cancelled successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error cancelling task: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to cancel task: {str(e)}"
+        )
+
+
+@app.get("/api/celery/status", tags=["System"])
+async def get_celery_status() -> Dict:
+    """
+    📊 CELERY STATUS: Get Celery configuration and worker status
+    
+    Returns:
+        Celery system status and configuration
+    """
+    try:
+        # Get Celery info
+        info = get_celery_info()
+        
+        # Check active workers
+        inspector = celery_app.control.inspect()
+        
+        active_workers = inspector.active()
+        registered_tasks = inspector.registered()
+        stats = inspector.stats()
+        
+        return {
+            "celery_config": info,
+            "workers": {
+                "active": list(active_workers.keys()) if active_workers else [],
+                "count": len(active_workers) if active_workers else 0,
+                "stats": stats
+            },
+            "tasks": {
+                "registered": list(registered_tasks.values())[0] if registered_tasks else []
+            },
+            "broker_url": info['broker_url'],
+            "result_backend": info['result_backend'],
+            "status": "operational" if active_workers else "no_workers"
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error retrieving Celery status: {str(e)}", exc_info=True)
+        return {
+            "status": "error",
+            "message": str(e),
+            "celery_config": get_celery_info()
+        }
 
 
 @app.get("/api/config/strategies", tags=["Configuration"])

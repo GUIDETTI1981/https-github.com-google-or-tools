@@ -6,3 +6,6 @@ numpy==1.26.2
 python-multipart==0.0.6
 requests==2.31.0
 redis==5.0.1
+celery==5.3.4
+flower==2.0.1
+kombu==5.3.4
