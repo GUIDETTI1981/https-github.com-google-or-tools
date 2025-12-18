@@ -395,6 +395,47 @@ async def get_photon_status() -> Dict:
         }
 
 
+@app.get("/api/redis/status", tags=["Redis"])
+async def get_redis_status() -> Dict:
+    """
+    Verifica stato dettagliato del servizio Redis (Geocode Cache)
+    """
+    try:
+        from .services.geocode_cache import get_geocode_cache
+        
+        cache = get_geocode_cache()
+        
+        # Health check
+        is_available = cache.health_check()
+        
+        # Info dettagliate
+        info = cache.get_info()
+        
+        # Statistiche cache
+        stats = cache.get_stats()
+        
+        return {
+            "status": "available" if is_available else "unavailable",
+            "enabled": info["enabled"],
+            "host": info["host"],
+            "port": info["port"],
+            "ttl_seconds": info["ttl"],
+            "ttl_days": info["ttl_human"],
+            "is_connected": info["is_connected"],
+            "statistics": stats,
+            "features": info["features"],
+            "message": "Redis cache is operational" if is_available else "Redis is not responding"
+        }
+    except Exception as e:
+        logger.error(f"Errore verifica Redis: {e}", exc_info=True)
+        return {
+            "status": "error",
+            "enabled": False,
+            "is_available": False,
+            "message": f"Errore: {str(e)}"
+        }
+
+
 @app.post("/api/geocode", tags=["Geocoding"])
 async def geocode_address(request: Dict) -> Dict:
     """

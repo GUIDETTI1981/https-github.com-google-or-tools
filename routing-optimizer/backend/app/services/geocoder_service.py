@@ -4,6 +4,8 @@ Geocoder Service - Client per Photon (OSM-based geocoding)
 Questo modulo fornisce un'interfaccia per convertire indirizzi testuali
 in coordinate geografiche (lat/lon) usando Photon geocoder.
 
+Update 2025-12-17: Integrazione Redis cache per performance ottimali
+
 Autore: Senior Data Engineer & GIS Python Developer
 Data: 2025-12-17
 """
@@ -145,16 +147,23 @@ class GeocoderService:
         address: str,
         limit: int = 1,
         bias: Optional[Tuple[float, float]] = None,
-        bbox: Optional[Tuple[float, float, float, float]] = None
+        bbox: Optional[Tuple[float, float, float, float]] = None,
+        use_cache: bool = True
     ) -> Optional[GeocodingResult]:
         """
         Converte un indirizzo in coordinate geografiche
+        
+        Con cache Redis integrata:
+        1. Check cache (se abilitata)
+        2. Se CACHE HIT → return cached result
+        3. Se CACHE MISS → query Photon → cache result → return
         
         Args:
             address: Indirizzo da geocodificare
             limit: Numero massimo di risultati (default: 1, prende il migliore)
             bias: Coordinate di bias (lat, lon) per priorità geografica
             bbox: Bounding box (min_lon, min_lat, max_lon, max_lat) per limitare l'area
+            use_cache: Usa cache per questa richiesta (default: True)
             
         Returns:
             GeocodingResult con coordinate e metadata, None se non trovato
@@ -171,6 +180,30 @@ class GeocoderService:
         if not address or not isinstance(address, str) or len(address.strip()) < 3:
             logger.warning(f"Invalid address for geocoding: '{address}'")
             return None
+        
+        # Cache-aside pattern (se abilitata)
+        if use_cache and self.cache and self.cache.enabled:
+            return self.cache.get_or_fetch(
+                address,
+                lambda: self._geocode_from_photon(address, limit, bias, bbox)
+            )
+        else:
+            # No cache, direct Photon query
+            return self._geocode_from_photon(address, limit, bias, bbox)
+    
+    def _geocode_from_photon(
+        self,
+        address: str,
+        limit: int = 1,
+        bias: Optional[Tuple[float, float]] = None,
+        bbox: Optional[Tuple[float, float, float, float]] = None
+    ) -> Optional[GeocodingResult]:
+        """
+        Geocoding diretto da Photon (senza cache)
+        
+        Metodo interno chiamato dal cache manager o direttamente
+        se cache disabilitata.
+        """
         
         # Usa bias default se non specificato
         if bias is None and self.default_bias:
@@ -192,7 +225,7 @@ class GeocoderService:
         if bbox:
             params["bbox"] = f"{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}"
         
-        logger.info(f"Geocoding: '{address}' (limit={limit}, bias={bias})")
+        logger.info(f"🔍 Geocoding (Photon): '{address}' (limit={limit}, bias={bias})")
         
         try:
             response = requests.get(
@@ -214,7 +247,7 @@ class GeocoderService:
             feature = data["features"][0]
             result = self._parse_photon_feature(feature)
             
-            logger.info(f"Geocoded: '{address}' → ({result.latitude:.6f}, {result.longitude:.6f})")
+            logger.info(f"✅ Geocoded: '{address}' → ({result.latitude:.6f}, {result.longitude:.6f})")
             
             return result
             

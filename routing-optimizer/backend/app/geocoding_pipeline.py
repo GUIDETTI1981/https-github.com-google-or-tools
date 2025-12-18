@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from .models import Order, OrderWithAddress, GeocodingError
 from .services.address_sanitizer import AddressSanitizer, get_address_sanitizer
 from .services.geocoder_service import GeocoderService, get_geocoder_service, GeocoderError as ServiceGeocoderError
+from .services.geocode_cache import GeocodeCache, get_geocode_cache
 
 logger = logging.getLogger(__name__)
 
@@ -46,15 +47,42 @@ class GeocodingPipeline:
     Features:
     - Pulizia automatica indirizzi
     - Geocoding con bias geografico
+    - Redis persistent caching (Cache-Aside pattern)
     - Gestione errori senza crash
     - Statistiche dettagliate
     - Logging completo
+    
+    Architecture:
+    ┌──────────────────────────────────────────────────────────────┐
+    │  INPUT: OrderWithAddress (id, name, address, demand)        │
+    └────────────────────────┬─────────────────────────────────────┘
+                             │
+                             ▼
+    ┌──────────────────────────────────────────────────────────────┐
+    │  Step 1: AddressSanitizer.clean()                           │
+    │  "V. Garibaldi 23" → "Via Garibaldi 23"                    │
+    └────────────────────────┬─────────────────────────────────────┘
+                             │
+                             ▼
+    ┌──────────────────────────────────────────────────────────────┐
+    │  Step 2: GeocodeCache.get_or_fetch()                        │
+    │    ├─ CACHE HIT → return cached coordinates ⚡               │
+    │    └─ CACHE MISS → call Photon → cache result 💾            │
+    └────────────────────────┬─────────────────────────────────────┘
+                             │
+                             ▼
+    ┌──────────────────────────────────────────────────────────────┐
+    │  OUTPUT:                                                     │
+    │  ✅ Order(lat, lon, demand) → to VRP solver                 │
+    │  ❌ GeocodingError → to frontend                            │
+    └──────────────────────────────────────────────────────────────┘
     """
     
     def __init__(
         self,
         sanitizer: AddressSanitizer = None,
-        geocoder: GeocoderService = None
+        geocoder: GeocoderService = None,
+        cache: GeocodeCache = None
     ):
         """
         Inizializza la pipeline di geocoding
@@ -62,11 +90,15 @@ class GeocodingPipeline:
         Args:
             sanitizer: AddressSanitizer instance (default: singleton)
             geocoder: GeocoderService instance (default: singleton)
+            cache: GeocodeCache instance (default: singleton)
         """
         self.sanitizer = sanitizer or get_address_sanitizer()
         self.geocoder = geocoder or get_geocoder_service()
+        self.cache = cache or get_geocode_cache()
         
         logger.info("GeocodingPipeline initialized")
+        logger.info(f"  Cache enabled: {self.cache.enabled}")
+        logger.info(f"  Cache TTL: {self.cache.ttl // (24*60*60)} days")
     
     def process_orders(
         self,
@@ -133,8 +165,13 @@ class GeocodingPipeline:
                 cleaned_address = self.sanitizer.clean(order.address)
                 logger.debug(f"Order {order.id}: '{order.address}' → '{cleaned_address}'")
                 
-                # Step 3: Geocodifica
-                result = self.geocoder.geocode(cleaned_address)
+                # Step 3: Geocodifica con Cache-Aside pattern
+                # Cache HIT → instant return (drastically reduced Photon calls)
+                # Cache MISS → call Photon → store in cache for future requests
+                result = self.cache.get_or_fetch(
+                    cleaned_address,
+                    lambda: self.geocoder.geocode(cleaned_address)
+                )
                 
                 if result is None:
                     # Geocoding fallito
@@ -207,14 +244,26 @@ class GeocodingPipeline:
         return {
             "sanitizer_info": self.sanitizer.get_info(),
             "geocoder_info": self.geocoder.get_info(),
+            "cache_info": self.cache.get_info(),
             "features": [
                 "Pulizia automatica indirizzi",
                 "Geocoding OSM-based",
+                "Redis persistent caching (30 giorni TTL)",
+                "Cache-Aside pattern",
                 "Gestione errori resiliente",
                 "Bias geografico",
                 "Statistiche dettagliate"
             ]
         }
+    
+    def get_cache_stats(self) -> dict:
+        """
+        Ottiene statistiche della cache Redis
+        
+        Returns:
+            Dict con hit rate e statistiche
+        """
+        return self.cache.get_stats()
 
 
 # Singleton instance (opzionale)

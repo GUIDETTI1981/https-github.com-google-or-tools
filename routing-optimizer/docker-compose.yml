@@ -16,6 +16,13 @@ services:
       - VALHALLA_PORT=8002
       - USE_OSRM=true
       - USE_VALHALLA=true
+      - USE_PHOTON=true
+      - PHOTON_HOST=photon
+      - PHOTON_PORT=2322
+      - USE_REDIS_CACHE=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_CACHE_TTL=2592000
       - PYTHONUNBUFFERED=1
     volumes:
       - ./backend:/app
@@ -23,6 +30,7 @@ services:
       - osrm
       - valhalla
       - photon
+      - redis
     networks:
       - routing-network
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -117,6 +125,26 @@ services:
       retries: 3
       start_period: 120s
 
+  # Redis Cache (Persistent geocoding cache)
+  redis:
+    image: redis:alpine
+    container_name: routing-optimizer-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      # Volume persistente per non perdere la cache
+      - ./redis-data:/data
+    networks:
+      - routing-network
+    command: redis-server --appendonly yes --appendfsync everysec
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   # Frontend React + Vite (opzionale, per deploy completo)
   frontend:
     build:
@@ -146,4 +174,6 @@ volumes:
   valhalla-data:
     driver: local
   photon-data:
+    driver: local
+  redis-data:
     driver: local
